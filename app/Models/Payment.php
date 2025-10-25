@@ -21,6 +21,7 @@ class Payment extends Model
         'status',
     ];
 
+
     protected $casts = [
         'amount' => 'decimal:2',
     ];

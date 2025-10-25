@@ -28,6 +28,9 @@ new class extends Component {
     public $months = 0;
     public $weeks = 0;
 
+    public $base_amount = 0;
+    public $deposit_percentage = 0.3;
+    public $deposit = 0;
     public $total = 0;
 
     public $error = null;
@@ -37,6 +40,8 @@ new class extends Component {
 
     public $payment;
     // public $transaction_reference;
+
+    public $paymongo_url;
 
     public function mount($id)
     {
@@ -53,6 +58,9 @@ new class extends Component {
             'rental_start' => 'nullable',
             'rental_end' => 'nullable',
             'total' => 'required|numeric|min:1',
+            'deposit' => 'nullable|numeric|min:1',
+            'base_amount' => 'nullable|numeric|min:1',
+            'paymongo_url' => 'nullable|string',
         ]);
         return $this->handleOnlinePayment();
     }
@@ -74,7 +82,9 @@ new class extends Component {
                     $this->rental_start = $this->rental_start ?? now();
                     $this->rental_end = $this->rental_end ?? now()->addHours(4);
 
-                    $this->total = $this->hours > 0 ? $this->hours * $ratePerHour : 0;
+                    $this->base_amount = $this->hours > 0 ? $this->hours * $ratePerHour : 0;
+                    $this->deposit = $this->base_amount * $this->deposit_percentage;
+                    $this->total = $this->base_amount + $this->deposit;
                     break;
 
                 case 'days':
@@ -86,7 +96,11 @@ new class extends Component {
                         $days = max(1, ceil($totalHours / 24));
 
                         $this->days = $days;
-                        $this->total = $days * $this->vehicle->rate_day;
+
+                        $this->base_amount = $days * $this->vehicle->rate_day;
+                        $this->deposit = $this->deposit_percentage * $this->vehicle->rate_day;
+
+                        $this->total = $this->deposit + $this->base_amount;
                     }
                     break;
 
@@ -96,7 +110,9 @@ new class extends Component {
                         $end = Carbon::parse($this->rental_end);
                         $weeks = max(1, ceil($start->diffInWeeks($end)));
                         $this->weeks = $weeks;
-                        $this->total = $this->vehicle->rate_day * 7 * $weeks;
+
+                        $this->deposit = $this->deposit_percentage * $this->vehicle->rate_day;
+                        $this->total = $this->deposit + $this->vehicle->rate_day * 7 * $weeks;
                     }
                     break;
 
@@ -106,12 +122,18 @@ new class extends Component {
                         $end = Carbon::parse($this->rental_end);
                         $months = max(1, ceil($start->diffInMonths($end)));
                         $this->months = $months;
-                        $this->total = $this->vehicle->rate_day * 30 * $months;
+
+                        // Updated: Calculate deposit based on monthly rate
+                        $this->base_amount = $this->vehicle->rate_day * 30 * $months;
+                        $this->deposit = $this->deposit_percentage * $this->base_amount;
+                        $this->total = $this->base_amount + $this->deposit;
                     }
                     break;
 
                 case 'pickup_dropOff':
-                    $this->total = max(250, min($this->vehicle->rate_day, 2500));
+                    $this->deposit = $this->deposit_percentage * $this->vehicle->rate_day;
+                    $this->total = $this->deposit + max(250, min($this->vehicle->rate_day, 2500));
+
                     break;
 
                 default:
@@ -141,7 +163,8 @@ new class extends Component {
                 'dropOff_location' => $this->dropOff_location,
                 'rental_start' => $this->rental_start,
                 'rental_end' => $this->rental_end,
-                'base_amount' => $this->total,
+                'base_amount' => $this->base_amount,
+                'deposit' => $this->deposit,
                 'status' => 'pending',
                 'agreement_no' => 'CRTG-' . strtoupper(uniqid()),
             ]);
@@ -167,7 +190,7 @@ new class extends Component {
                             'description' => 'Drive & Go - Twayne Garage Rental',
                             'line_items' => [
                                 [
-                                    'name' => "{$this->vehicle->manufacturer->name} {$this->vehicle->model}",
+                                    'name' => "{$this->vehicle->manufacturer->brand} {$this->vehicle->model}",
                                     'currency' => 'PHP',
                                     'amount' => (int) ($this->total * 100),
                                     'description' => "{$this->vehicle->model} Rental",
@@ -186,7 +209,7 @@ new class extends Component {
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
-                    'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SK') . ':'),
+                    'Authorization' => 'Basic ' . base64_encode(config('services.paymongo.secret_key') . ':'),
                 ],
             ]);
 
@@ -195,6 +218,11 @@ new class extends Component {
             if (isset($checkoutData['data']['attributes']['checkout_url'])) {
                 $checkoutSessionUrl = $checkoutData['data']['attributes']['checkout_url'];
                 // $this->dispatch('redirect-to-paymongo', $checkoutData['data']['attributes']['checkout_url']);
+
+                $rental->update([
+                    'paymongo_url' => $checkoutSessionUrl,
+                ]);
+
                 return redirect()->away($checkoutSessionUrl);
             }
 
@@ -214,7 +242,7 @@ new class extends Component {
 
 <div>
     {{-- @if ($vehicle->rentals->isNotEmpty()) --}}
-{{--
+    {{--
         <div x-data="{
             count: 5,
             startCountdown() {
@@ -239,277 +267,302 @@ new class extends Component {
             </div>
         </div> --}}
     {{-- @else --}}
-        <div class="w-full max-w-[85rem] p-3 sm:px-6 lg:px-8 mx-auto">
-            <section class="bg-white dark:bg-gray-800  py-11 font-poppins">
-                <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="w-full max-w-[85rem] p-3 sm:px-6 lg:px-8 mx-auto">
+        <section class="bg-white dark:bg-gray-800  py-11 font-poppins">
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                    <div x-data="{ mainImage: '{{ url('storage', $vehicle->avatar) }}' }">
-                        <div class="mb-4">
-                            <img x-bind:src="mainImage" alt="{{ $vehicle->make }} {{ $vehicle->model }}"
-                                class="object-cover w-full h-[300px] rounded-lg shadow-md">
-                        </div>
-
-                        <div class="flex flex-wrap gap-2">
-                            <div class="w-20 h-20 border rounded-md overflow-hidden cursor-pointer hover:border-red-500"
-                                x-on:click="mainImage='{{ url('storage', $vehicle->avatar) }}'">
-                                <img src="{{ url('storage', $vehicle->avatar) }}" alt="Main Photo"
-                                    class="object-cover w-full h-full">
-                            </div>
-
-                            @if ($vehicle->photos)
-                                @foreach ($vehicle->photos as $image)
-                                    <div class="w-20 h-20 border rounded-md overflow-hidden cursor-pointer hover:border-red-500"
-                                        x-on:click="mainImage='{{ url('storage', $image) }}'"
-                                        wire:key="{{ $vehicle->id }}">
-                                        <img src="{{ url('storage', $image) }}" alt="Extra Image"
-                                            class="object-cover w-full h-full">
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
+                <div x-data="{ mainImage: '{{ url('storage', $vehicle->avatar) }}' }">
+                    <div class="mb-4">
+                        <img x-bind:src="mainImage" alt="{{ $vehicle->make }} {{ $vehicle->model }}"
+                            class="object-cover w-full h-[300px] rounded-lg shadow-md">
                     </div>
 
-                    <div>
-                        <div class="mb-8">
-                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-                                Rent <span class="text-red-600">{{ $vehicle->make }}</span>
-                                {{ $vehicle->model }}
-                                <span class="text-sm text-gray-500">({{ $vehicle->year }})</span>
-                            </h2>
-                            <p class="text-gray-600 dark:text-gray-400">
-                                Rate:
-                                <span class="text-green-600 font-semibold">
-                                    {{ Number::currency($vehicle->rate_day, 'PHP') }}/day
-                                </span>
-                            </p>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="w-20 h-20 border rounded-md overflow-hidden cursor-pointer hover:border-red-500"
+                            x-on:click="mainImage='{{ url('storage', $vehicle->avatar) }}'">
+                            <img src="{{ url('storage', $vehicle->avatar) }}" alt="Main Photo"
+                                class="object-cover w-full h-full">
                         </div>
 
-                        {{-- Pickup & Return Form --}}
-                        <form wire:submit.prevent="confirmedPaid" class="space-y-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                    Trip Type
-                                </label>
-                                <select wire:model.live="trip_type" required
-                                    class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    <option value="">-- Select Trip Type --</option>
-                                    <option value="pickup_dropOff">Pick Up & Drop Off Only</option>
-                                    <option value="hrs">Hour/s</option>
-                                    <option value="days">Day/s</option>
-                                    <option value="weeks">Week/s</option>
-                                    <option value="months">Months/s</option>
-                                </select>
-                            </div>
-
-
-
-                            @if ($trip_type === 'weeks')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental Start
-                                        </label>
-                                        <input type="week" wire:model.live="rental_start" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental End
-                                        </label>
-                                        <input type="week" wire:model.live="rental_end" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
+                        @if ($vehicle->photos)
+                            @foreach ($vehicle->photos as $image)
+                                <div class="w-20 h-20 border rounded-md overflow-hidden cursor-pointer hover:border-red-500"
+                                    x-on:click="mainImage='{{ url('storage', $image) }}'"
+                                    wire:key="{{ $vehicle->id }}">
+                                    <img src="{{ url('storage', $image) }}" alt="Extra Image"
+                                        class="object-cover w-full h-full">
                                 </div>
-                            @endif
-
-                            @if ($trip_type === 'days')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental Start
-                                        </label>
-                                        <input type="datetime-local" wire:model.live="rental_start" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental End
-                                        </label>
-                                        <input type="datetime-local" wire:model.live="rental_end" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if ($trip_type === 'months')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental Start
-                                        </label>
-                                        <input type="month" wire:model.live="rental_start" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental End
-                                        </label>
-                                        <input type="month" wire:model.live="rental_end" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if ($trip_type === 'hrs')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                    <div class="col-span-2">
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Number of Hours
-                                        </label>
-                                        <input type="number" min="1" wire:model.live="hours"
-                                            placeholder="Enter hours"
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if ($trip_type === 'pickup_dropOff')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Pickup Location
-                                        </label>
-                                        <input type="text" wire:model.live="pickup_location" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Drop Off Location
-                                        </label>
-                                        <input type="text" wire:model.live="dropOff_location" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
-
-                            <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Booking Summary
-                                </h3>
-
-                                @if ($error)
-                                    <p class="text-red-600 font-medium">{{ $error }}</p>
-                                @else
-                                    <ul class="text-gray-700 dark:text-gray-300 space-y-1">
-                                        <li>
-                                            Trip Type:
-                                            <span class="font-semibold capitalize text-gray-900 dark:text-gray-100">
-                                                {{ str_replace('_', ' & ', $trip_type) }}
-                                            </span>
-                                        </li>
-
-                                        {{-- For Hours --}}
-                                        @if ($trip_type === 'hrs')
-                                            <li>Hours: <span class="font-semibold">{{ $hours ?: 0 }}</span></li>
-                                            <li>Rate/Hour:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day / 10, 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
-
-                                        {{-- For Days --}}
-                                        @if ($trip_type === 'days')
-                                            <li>Days: <span class="font-semibold">{{ $days ?: 0 }}</span></li>
-                                            <li>Rate/Day:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day, 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
-
-                                        {{-- For Weeks --}}
-                                        @if ($trip_type === 'weeks')
-                                            <li>Weeks: <span class="font-semibold">{{ $weeks ?: 0 }}</span></li>
-                                            <li>Rate/Week:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day * 7, 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
-
-                                        {{-- For Months --}}
-                                        @if ($trip_type === 'months')
-                                            <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span></li>
-                                            <li>Rate/Month:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
-
-                                        {{-- For Pickup & DropOff --}}
-                                        @if ($trip_type === 'pickup_dropOff')
-                                            <li>Pickup Location:
-                                                <span class="font-semibold">{{ $pickup_location ?: '—' }}</span>
-                                            </li>
-                                            <li>Drop Off Location:
-                                                <span class="font-semibold">{{ $dropOff_location ?: '—' }}</span>
-                                            </li>
-                                            <li>Flat Rate:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency(max(250, min($vehicle->rate_day, 2500)), 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
-
-                                        <hr class="my-2 border-gray-300 dark:border-gray-600">
-
-                                        <li>Total:
-                                            <span class="font-bold text-green-700">
-                                                {{ Number::currency($total, 'PHP') }}
-                                            </span>
-                                        </li>
-                                    </ul>
-                                @endif
-                            </div>
-
-
-                            <input type="hidden">
-                            <div class="pt-4">
-                                @php
-                                    $isInvalid =
-                                        $error ||
-                                        $total <= 0 ||
-                                        ($trip_type === 'hrs' && $hours <= 0) ||
-                                        ($trip_type === 'days' && $days <= 0) ||
-                                        ($trip_type === 'weeks' && $weeks <= 0) ||
-                                        ($trip_type === 'months' && $months <= 0) ||
-                                        ($trip_type === 'pickup_dropOff' &&
-                                            (empty($pickup_location) || empty($dropOff_location)));
-                                @endphp
-
-                                <button type="submit"
-                                    class="w-full p-4 rounded-md text-white transition
-               {{ $isInvalid ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' }}"
-                                    {{ $isInvalid ? 'disabled' : '' }}>
-                                    <span wire:loading.remove>Continue to Confirmation</span>
-                                    <span wire:loading>Processing...</span>
-                                </button>
-                            </div>
-
-                        </form>
-
+                            @endforeach
+                        @endif
                     </div>
                 </div>
-            </section>
-            <script>
-                // document.addEventListener("livewire:init", () => {
-                //     Livewire.on("redirect-to-paymongo", (url) => {
-                //         window.location.href = url;
-                //     });
-                // });
-            </script>
-        </div>
+
+                <div>
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                            Rent <span class="text-red-600">{{ $vehicle->make }}</span>
+                            {{ $vehicle->model }}
+                            <span class="text-sm text-gray-500">({{ $vehicle->year }})</span>
+                        </h2>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Rate:
+                            <span class="text-green-600 font-semibold">
+                                {{ Number::currency($vehicle->rate_day, 'PHP') }}/day
+                            </span>
+                        </p>
+                    </div>
+
+                    {{-- Pickup & Return Form --}}
+                    <form wire:submit.prevent="confirmedPaid" class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                Trip Type
+                            </label>
+                            <select wire:model.live="trip_type" required
+                                class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                <option value="">-- Select Trip Type --</option>
+                                <option value="pickup_dropOff">Pick Up & Drop Off Only</option>
+                                <option value="hrs">Hour/s</option>
+                                <option value="days">Day/s</option>
+                                <option value="weeks">Week/s</option>
+                                <option value="months">Months/s</option>
+                            </select>
+                        </div>
+
+
+
+                        @if ($trip_type === 'weeks')
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Rental Start
+                                    </label>
+                                    <input type="week" wire:model.live="rental_start" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Rental End
+                                    </label>
+                                    <input type="week" wire:model.live="rental_end" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($trip_type === 'days')
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Rental Start
+                                    </label>
+                                    <input type="datetime-local" wire:model.live="rental_start" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Rental End
+                                    </label>
+                                    <input type="datetime-local" wire:model.live="rental_end" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($trip_type === 'months')
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Rental Start
+                                    </label>
+                                    <input type="month" wire:model.live="rental_start" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Rental End
+                                    </label>
+                                    <input type="month" wire:model.live="rental_end" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($trip_type === 'hrs')
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div class="col-span-2">
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Number of Hours
+                                    </label>
+                                    <input type="number" min="1" wire:model.live="hours"
+                                        placeholder="Enter hours"
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($trip_type === 'pickup_dropOff')
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Pickup Location
+                                    </label>
+                                    <input type="text" wire:model.live="pickup_location" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                        Drop Off Location
+                                    </label>
+                                    <input type="text" wire:model.live="dropOff_location" required
+                                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Booking Summary
+                            </h3>
+
+                            @if ($error)
+                                <p class="text-red-600 font-medium">{{ $error }}</p>
+                            @else
+                                <ul class="text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>
+                                        Trip Type:
+                                        <span class="font-semibold capitalize text-gray-900 dark:text-gray-100">
+                                            {{ str_replace('_', ' & ', $trip_type) }}
+                                        </span>
+                                    </li>
+
+                                    {{-- For Hours --}}
+                                    @if ($trip_type === 'hrs')
+                                        <li>Hours: <span class="font-semibold">{{ $hours ?: 0 }}</span></li>
+                                        <li>Rate/Hour:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($vehicle->rate_day / 10, 'PHP') }}
+                                            </span>
+                                        </li>
+                                        <li>Deposit:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($this->deposit, 'PHP') }}
+                                            </span>
+                                        </li>
+                                    @endif
+
+                                    {{-- For Days --}}
+                                    @if ($trip_type === 'days')
+                                        <li>Days: <span class="font-semibold">{{ $days ?: 0 }}</span></li>
+                                        <li>Rate/Day:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($vehicle->rate_day, 'PHP') }}
+                                            </span>
+                                        </li>
+                                        <li>Deposit:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($this->deposit, 'PHP') }}
+                                            </span>
+                                        </li>
+                                    @endif
+
+                                    {{-- For Weeks --}}
+                                    @if ($trip_type === 'weeks')
+                                        <li>Weeks: <span class="font-semibold">{{ $weeks ?: 0 }}</span></li>
+                                        <li>Rate/Week:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($vehicle->rate_day * 7, 'PHP') }}
+                                            </span>
+                                        </li>
+                                        <li>Deposit:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($this->deposit, 'PHP') }}
+                                            </span>
+                                        </li>
+                                    @endif
+
+                                    {{-- For Months --}}
+                                    @if ($trip_type === 'months')
+                                        <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span></li>
+                                        <li>Rate/Month:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
+                                            </span>
+                                        </li>
+                                        <li>Deposit:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($this->deposit, 'PHP') }}
+                                            </span>
+                                        </li>
+                                    @endif
+
+                                    {{-- For Pickup & DropOff --}}
+                                    @if ($trip_type === 'pickup_dropOff')
+                                        <li>Pickup Location:
+                                            <span class="font-semibold">{{ $pickup_location ?: '—' }}</span>
+                                        </li>
+                                        <li>Drop Off Location:
+                                            <span class="font-semibold">{{ $dropOff_location ?: '—' }}</span>
+                                        </li>
+                                        <li>Flat Rate:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency(max(250, min($vehicle->rate_day, 2500)), 'PHP') }}
+                                            </span>
+                                        </li>
+                                        <li>Deposit:
+                                            <span class="font-semibold text-green-600">
+                                                {{ Number::currency($this->deposit, 'PHP') }}
+                                            </span>
+                                        </li>
+                                    @endif
+
+                                    <hr class="my-2 border-gray-300 dark:border-gray-600">
+
+                                    <li>Total:
+                                        <span class="font-bold text-green-700">
+                                            {{ Number::currency($total, 'PHP') }}
+                                        </span>
+                                    </li>
+                                </ul>
+                            @endif
+                        </div>
+
+
+                        <input type="hidden">
+                        <div class="pt-4">
+                            @php
+                                $isInvalid =
+                                    $error ||
+                                    $total <= 0 ||
+                                    ($trip_type === 'hrs' && $hours <= 0) ||
+                                    ($trip_type === 'days' && $days <= 0) ||
+                                    ($trip_type === 'weeks' && $weeks <= 0) ||
+                                    ($trip_type === 'months' && $months <= 0) ||
+                                    ($trip_type === 'pickup_dropOff' &&
+                                        (empty($pickup_location) || empty($dropOff_location)));
+                            @endphp
+
+                            <button type="submit"
+                                class="w-full p-4 rounded-md text-white transition
+               {{ $isInvalid ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' }}"
+                                {{ $isInvalid ? 'disabled' : '' }}>
+                                <span wire:loading.remove>Continue to Confirmation</span>
+                                <span wire:loading>Processing...</span>
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </section>
+        <script>
+            // document.addEventListener("livewire:init", () => {
+            //     Livewire.on("redirect-to-paymongo", (url) => {
+            //         window.location.href = url;
+            //     });
+            // });
+        </script>
+    </div>
 
     {{-- @endif --}}
 </div>

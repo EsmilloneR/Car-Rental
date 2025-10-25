@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'paymongo' => [
+    'secret_key' => env('PAYMONGO_SK'),
+    'public_key' => env('PAYMONGO_PK'),
+    ],
+
 ];

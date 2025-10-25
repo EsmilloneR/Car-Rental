@@ -10,7 +10,7 @@ new class extends Component {
     use WithPagination;
 
     public $rentals;
-
+    protected $listeners = ['refreshRentals' => 'loadRentals'];
     public function mount()
     {
         $this->loadRentals();
@@ -22,6 +22,25 @@ new class extends Component {
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
+    }
+
+    public function continueToPayment($id)
+    {
+        $rental = Rental::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$rental || !$rental->paymongo_url) {
+            return;
+        }
+
+        // dd($rental->paymongo_url);
+        $this->dispatch('redirect-to-payment', url: $rental->paymongo_url);
+    }
+
+    public function attemptPayment($id)
+    {
+        $this->dispatch('confirm-payment', id: $id);
     }
 
     public function attemptCancel($id)
@@ -41,19 +60,22 @@ new class extends Component {
 
         $now = now();
         $start = \Carbon\Carbon::parse($rental->rental_start);
-        $diffInHours = $now->diffInHours($start, false);
+        $diffInMinutes = $now->diffInMinutes($start, false);
 
-        if ($diffInHours > 24) {
+        if ($diffInMinutes > 24 * 60) {
             $rental->update(['status' => 'cancelled']);
             $this->dispatch('alert', type: 'success', message: 'Booking cancelled successfully.');
         } else {
             $rental->update(['status' => 'cancelled']);
-            DeletedRental::dispatch($rental->id)->delay(now()->addHours(24));
-            $this->dispatch('alert', type: 'info', message: 'Booking cancelled and will be removed in 24 hours.');
+
+            DeletedRental::dispatch($rental->id)->delay(now()->addMinute());
+            $this->dispatch('alert', type: 'info', message: 'Booking cancelled and will be removed in 1 Minute.');
         }
 
         $this->loadRentals();
         $this->resetPage();
+
+        $this->dispatch('schedule-refresh');
     }
 };
 ?>
@@ -68,16 +90,17 @@ new class extends Component {
         </div>
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
             @foreach ($rentals as $rental)
                 @php $vehicle = $rental->vehicle; @endphp
 
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                    <img src="{{ asset('storage/' . $vehicle->avatar) }}" alt="{{ $vehicle->manufacturer->name }}"
+                    <img src="{{ asset('storage/' . $vehicle->avatar) }}" alt="{{ $vehicle->manufacturer->brand }}"
                         class="w-full h-48 object-cover">
 
                     <div class="p-4">
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
-                            {{ $vehicle->manufacturer->name }} {{ $vehicle->model }}
+                            {{ $vehicle->manufacturer->brand }} {{ $vehicle->model }}
                         </h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                             Year: <span class="font-medium">{{ $vehicle->year }}</span>
@@ -113,10 +136,17 @@ new class extends Component {
                             {{ ucfirst($rental->status) }}
                         </span>
 
+
                         @if (in_array($rental->status, ['pending', 'ongoing']))
+                            @if ($rental->paymongo_url)
+                                <button wire:click="attemptPayment({{ $rental->id }})"
+                                    class="hover:text-green-700 text-sm font-medium transition cursor-pointer">
+                                    <span class=" text-green-600"> Continue Payment</span>
+                                </button>
+                            @endif
                             <button wire:click="attemptCancel({{ $rental->id }})"
-                                class="text-red-600 hover:text-red-700 text-sm font-medium transition">
-                                Cancel
+                                class=" hover:text-red-700 text-sm font-medium transition cursor-pointer">
+                                <span class="text-red-600">Cancel</span>
                             </button>
                         @endif
                     </div>
@@ -149,6 +179,34 @@ new class extends Component {
             });
         });
 
+        Livewire.on('confirm-payment', (id) => {
+            Swal.fire({
+                title: 'Continue to Payment?',
+                text: "You will be redirected to complete your payment.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Continue'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const component = Livewire.find(document.querySelector('[wire\\:id]')
+                        .getAttribute('wire:id'));
+                    component.call('continueToPayment', id);
+                }
+            });
+        });
+
+        Livewire.on('redirect-to-payment', ({
+            url
+        }) => {
+            console.log(url);
+            if (url) {
+                window.location.href = url;
+            }
+        });
+
+
         Livewire.on('alert', ({
             type,
             message
@@ -159,6 +217,14 @@ new class extends Component {
                 timer: 2000,
                 showConfirmButton: false
             });
+        });
+
+
+        Livewire.on('schedule-refresh', () => {
+            // Wait a little longer than 1 minute (to let queue job finish)
+            setTimeout(() => {
+                Livewire.dispatch('refreshRentals');
+            }, 65000); // 65 seconds
         });
     });
 </script>

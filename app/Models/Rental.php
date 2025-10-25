@@ -20,7 +20,8 @@ class Rental extends Model
         'penalties',
         'total',
         'status',
-        'agreement_no'
+        'agreement_no',
+        'paymongo_url'
     ];
 
     protected static function booted()
@@ -28,9 +29,9 @@ class Rental extends Model
         static::saving(function ($rental) {
             $rental->total =
                 ($rental->base_amount ?? 0)
-                + ($rental->extra_charges ?? 0)
-                + ($rental->penalties ?? 0)
-                - ($rental->deposit ?? 0);
+                + (($rental->deposit ?? 0) -
+                - ($rental->extra_charges ?? 0)
+                - ($rental->penalties ?? 0));
         });
 
         static::creating(function ($rental) {
@@ -46,6 +47,18 @@ class Rental extends Model
 
                 $rental->agreement_no = $agreementNo;
             }
+        });
+
+        static::updating(function ($rental) {
+        // If the rental is marked as paid or completed, remove the PayMongo link
+            if (in_array($rental->status, ['paid', 'completed'])) {
+                $rental->paymongo_url = null;
+            }
+        });
+
+         static::deleting(function ($rental) {
+            $rental->inspections()->delete();
+            $rental->payments()->delete();
         });
     }
 

@@ -113,10 +113,12 @@
         <div class="mb-4">
             <table class="w-full border-collapse">
                 <tr class="border-b">
-                    <td class="font-bold pr-2">Pickup Location:</td>
-                    <td colspan="3">{{ $rental->pickup_location ?? '________________' }}</td>
-                    <td class="font-bold pr-2">Drop Off Location:</td>
-                    <td>{{ $rental->dropoff_location ?? '________________' }}</td>
+                    @if ($rental->trip_type == 'pickup_dropOff')
+                        <td class="font-bold pr-2">Pickup Location:</td>
+                        <td colspan="3">{{ $rental->pickup_location ?? '________________' }}</td>
+                        <td class="font-bold pr-2">Drop Off Location:</td>
+                        <td>{{ $rental->dropoff_location ?? '________________' }}</td>
+                    @endif
                 </tr>
                 <tr>
                     <td class="font-bold pr-2">Return Date:</td>
@@ -131,10 +133,8 @@
         <div class="mb-6">
             <p class="font-bold mb-1">Trip Type:</p>
             <ul class="list-none pl-0 space-y-1">
-                <li>{{ $rental->trip_type == 'pickup' ? '✔' : '___' }} Pick Up & Drop Off only</li>
+                <li>{{ $rental->trip_type == 'pickup_dropOff' ? '✔' : '___' }} Pick Up & Drop Off only</li>
                 <li>{{ $rental->trip_type == 'hours' ? '✔' : '___' }} Hour/s</li>
-                <li>{{ $rental->trip_type == 'roundtrip' ? '✔' : '___' }} Round trip only (10hrs max)</li>
-                <li>{{ $rental->trip_type == '24hrs' ? '✔' : '___' }} 24 hours</li>
                 <li>{{ $rental->trip_type == 'days' ? '✔' : '___' }} Days</li>
                 <li>{{ $rental->trip_type == 'weeks' ? '✔' : '___' }} Week/weeks</li>
                 <li>{{ $rental->trip_type == 'months' ? '✔' : '___' }} Month/months</li>
