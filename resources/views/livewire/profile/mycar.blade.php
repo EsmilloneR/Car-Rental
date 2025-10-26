@@ -137,7 +137,7 @@ new class extends Component {
                         </span>
 
 
-                        @if (in_array($rental->status, ['pending', 'ongoing']))
+                        @if (in_array($rental->status, ['pending']))
                             @if ($rental->paymongo_url)
                                 <button wire:click="attemptPayment({{ $rental->id }})"
                                     class="hover:text-green-700 text-sm font-medium transition cursor-pointer">

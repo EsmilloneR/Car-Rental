@@ -36,29 +36,15 @@ class DeletedRental implements ShouldQueue
      *
      * @return void
      */
-    // public function handle()
-    // {
-    //     $rental = Rental::find($this->rentalId);
 
-    //     if ($rental && $rental->status === 'cancelled') {
-    //         $cancelTime = Carbon::parse($rental->updated_at);
-    //         if (now()->diffInMinutes($cancelTime) >= 1) {
-    //             if (Rental::find($this->rentalId)) {
-    //                 $rental->delete();
-    //             }
-    //         }
-    //     }
-    // }
 
     public function handle(){
         $rental = Rental::with(['inspections', 'payments'])->find($this->rentalId);
 
         if ($rental && $rental->status === 'cancelled') {
-            // Delete related data first
             $rental->inspections()->delete();
             $rental->payments()->delete();
 
-            // Then delete the rental record itself
             $rental->delete();
         }
     }

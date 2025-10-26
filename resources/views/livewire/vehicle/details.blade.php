@@ -23,7 +23,7 @@ new class extends Component {
                     <div class="sticky top-0">
                         <div class="relative mb-6 rounded-xl overflow-hidden shadow-md">
                             <img x-bind:src="mainImage"
-                                alt="{{ $vehicle->manufacturer->name }} {{ $vehicle->model }}"
+                                alt="{{ $vehicle->manufacturer->brand }} {{ $vehicle->model }}"
                                 class="object-cover w-full h-[420px] rounded-lg">
                         </div>
 
@@ -44,7 +44,7 @@ new class extends Component {
                 <div class="w-full md:w-1/2 px-4">
                     <div class="lg:pl-10">
                         <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-                            <span class="text-red-600">{{ $vehicle->manufacturer->name }}</span>
+                            <span class="text-red-600">{{ $vehicle->manufacturer->brand }}</span>
                             {{ $vehicle->model }}
                             <span class="text-sm text-gray-500 dark:text-gray-400">({{ $vehicle->year }})</span>
                         </h2>

@@ -14,22 +14,22 @@ use UnitEnum;
 class Report extends Page
 {
     protected string $view = 'volt-livewire::filament.pages.report';
-    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedChartBar;
-    protected static BackedEnum|string|null $activeNavigationIcon = Heroicon::ChartBar;
-    protected static ?string $navigationLabel = 'Reports';
-    protected static string | UnitEnum | null $navigationGroup  = 'Report Management';
+    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedTrophy;
+    protected static BackedEnum|string|null $activeNavigationIcon = Heroicon::Trophy;
+    protected static ?string $navigationLabel = 'Most Loyal & Rented';
+    // protected static string | UnitEnum | null $navigationGroup  = 'Report Management';
 
     public $topVehicles;
     public $loyalCustomers;
 
     public function mount(): void
     {
-        $this->topVehicles = Vehicle::select('vehicles.model', DB::raw('COUNT(rentals.id) as total_rentals'))
-            ->join('rentals', 'rentals.vehicle_id', '=', 'vehicles.id')
-            ->groupBy('vehicles.id', 'vehicles.model')
-            ->orderByDesc('total_rentals')
+        $this->topVehicles = Vehicle::with('manufacturer')
+            ->withCount('rentals')
+            ->orderByDesc('rentals_count')
             ->limit(5)
             ->get();
+
 
         $this->loyalCustomers = User::select('users.name', DB::raw('COUNT(rentals.id) as total_rentals'))
             ->join('rentals', 'rentals.user_id', '=', 'users.id')
@@ -40,13 +40,23 @@ class Report extends Page
     }
 
     protected function getHeaderActions(): array
-        {
-            return [
-                Action::make('Download Report')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('primary')
-                    ->url(route('reports.download'), shouldOpenInNewTab: false),
-            ];
-        }
+    {
+        return [
+            Action::make('Download Report')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('primary')
+                ->url(route('reports.download'), shouldOpenInNewTab: false),
+        ];
+    }
 
+
+    public function getHeading(): string
+    {
+        return 'Rental Performance Overview';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'A summary of your most rented vehicles and loyal customers.';
+    }
 }

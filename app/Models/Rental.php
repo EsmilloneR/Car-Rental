@@ -29,7 +29,7 @@ class Rental extends Model
         static::saving(function ($rental) {
             $rental->total =
                 ($rental->base_amount ?? 0)
-                + (($rental->deposit ?? 0) -
+                + (($rental->deposit ?? 0)
                 - ($rental->extra_charges ?? 0)
                 - ($rental->penalties ?? 0));
         });
@@ -41,17 +41,15 @@ class Rental extends Model
 
                 do {
                     $agreementNo = 'AGR-' . $date . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-                    $exists = static::where('agreement_no', $agreementNo)->exists();
                     $count++;
-                } while ($exists);
+                } while (static::where('agreement_no', $agreementNo)->exists());
 
                 $rental->agreement_no = $agreementNo;
             }
         });
 
         static::updating(function ($rental) {
-        // If the rental is marked as paid or completed, remove the PayMongo link
-            if (in_array($rental->status, ['paid', 'completed'])) {
+            if (in_array($rental->status, ['reserved', 'completed'])) {
                 $rental->paymongo_url = null;
             }
         });

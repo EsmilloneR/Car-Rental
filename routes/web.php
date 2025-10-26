@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
@@ -13,6 +14,8 @@ Route::get('/', function () {
 })->name('home');
 
 Volt::route('/about', 'pages.about')->name('about');
+Volt::route('/contact', 'pages.contact')->name('contact');
+
 Route::get('/list-cars', ListCars::class)->name('list-cars');
 Volt::route('/vehicles/{id}/details', 'vehicle.details')->name('vehicle.details');
 
@@ -44,7 +47,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payments/{id}/receipt', [InvoiceController::class, 'receipt'])
     ->name('payments.receipt');
-    Route::get('/report/download', [ReportController::class, 'downloadReport'])->name('reports.download');
+
+    // PDF
+    Route::get('/report/download', [ReportController::class, 'downloadReport'])
+    ->name('reports.download');
+
+    Route::get('/analytics/download/{from}/{to}', [AnalyticController::class, 'downloadAnalytics'])->name('analytics.download');
 
 
 

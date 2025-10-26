@@ -24,12 +24,12 @@ class ListUsers extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Add New Vehicle')
+                ->label('Add New User')
                 ->icon('heroicon-o-user-plus')
                 ->color('primary')
                 ->button()
-                ->modalHeading('Register Vehicle')
-                ->modalDescription('Fill out the details below to add a new vehicle to your list.')
+                ->modalHeading('Register User')
+                ->modalDescription('Fill out the details below to add a new user to your list.')
                 ->createAnother(false),
         ];
     }

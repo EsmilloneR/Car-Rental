@@ -8,6 +8,8 @@ use App\Filament\Resources\Rentals\Pages\ListRentals;
 use App\Filament\Resources\Rentals\RelationManagers\InspectionRelationManager;
 use App\Filament\Resources\Rentals\Schemas\RentalForm;
 use App\Filament\Resources\Rentals\Tables\RentalsTable;
+use App\Filament\Resources\Rentals\Widgets\RentalChart;
+use App\Filament\Resources\Rentals\Widgets\RentalStatsOverview;
 use App\Models\Rental;
 use BackedEnum;
 use UnitEnum;
@@ -53,6 +55,14 @@ class RentalResource extends Resource
             'index' => ListRentals::route('/'),
             'create' => CreateRental::route('/create'),
             'edit' => EditRental::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            RentalChart::class,
+            RentalStatsOverview::class
         ];
     }
 

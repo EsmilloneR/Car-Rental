@@ -23,9 +23,10 @@
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse($this->topVehicles as $vehicle)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                                <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">{{ $vehicle->model }}
+                                <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">
+                                    {{ $vehicle->manufacturer->brand }} {{ $vehicle->model }}
                                 </td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $vehicle->total_rentals }}
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $vehicle->rentals_count }}
                                 </td>
                             </tr>
                         @empty

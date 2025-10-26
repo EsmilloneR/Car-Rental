@@ -1,4 +1,10 @@
-@include('partials.head')
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    @include('partials.head')
+
+</head>
 
 <body class="p-6 font-sans">
     <h1 class="text-2xl font-bold text-center mb-6">📊 Car Rental Summary Report</h1>
@@ -46,3 +52,5 @@
         Generated on {{ now()->format('F d, Y h:i A') }}
     </p>
 </body>
+
+</html>
