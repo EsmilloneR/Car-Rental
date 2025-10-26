@@ -17,26 +17,6 @@ class RentalObserver
         //
     }
 
-    /**
-     * Handle the Rental "updated" event.
-     */
-    // public function updated(Rental $rental): void
-    // {
-    //     if ($rental->wasChanged('status') && $rental->status === 'ongoing') {
-    //         $endTime = Carbon::parse($rental->rental_end);
-
-    //         // if ($endTime->isPast()) {
-    //         //     $endTime = now()->addMinute();
-    //         // }
-
-    //         $delaySeconds = max(now()->diffInSeconds($endTime, false), 10);
-
-    //         OngoingJob::dispatch($rental->id)->delay(now()->addSeconds($delaySeconds));
-    //         Log::info("OngoingJob dispatched for Rental ID {$rental->id}, runs in {$delaySeconds} seconds");
-    //     }
-    // }
-
-
 
      public function updated(Rental $rental): void
     {

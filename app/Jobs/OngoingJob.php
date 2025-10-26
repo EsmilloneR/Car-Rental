@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\Rental;
+use App\Models\User;
+use App\Notifications\RentalCompletedNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -10,6 +12,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+
+use Filament\Notifications\Notification;
 
 class OngoingJob implements ShouldQueue
 {
@@ -61,6 +65,23 @@ class OngoingJob implements ShouldQueue
         $end = Carbon::parse($rental->rental_end);
         if ($rental->status === 'ongoing' && now()->gte($end)) {
             $rental->update(['status' => 'completed']);
+            $rental->user->notify(new RentalCompletedNotification($rental));
+
+            $admin = User::where('role', 'admin')->first();
+            if ($admin) {
+                $admin->notify(new RentalCompletedNotification($rental));
+
+                Log::info("Attempting to send Filament notification to admin...");
+                Notification::make()
+                    ->title('Rental Completed')
+                    ->body("The rental for {$rental->user->name} (Agreement No. {$rental->agreement_no}) has been successfully completed.")
+                    ->success()
+                    ->sendToDatabase($admin)
+                    ->broadcast($admin);
+                Log::info("Filament notification successfully triggered for admin {$admin->id}");
+
+            }
+
             Log::info("Rental {$rental->id} marked as completed at {$rental->rental_end}");
         }else{
             Log::info("Rental {$rental->id} still ongoing (now=" . now() . ", end={$rental->rental_end})");

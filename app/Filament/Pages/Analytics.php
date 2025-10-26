@@ -81,4 +81,5 @@ class Analytics extends Page
             RentalChart::class,
         ];
     }
+
 }
