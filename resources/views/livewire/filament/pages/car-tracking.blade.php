@@ -27,7 +27,12 @@
             window.updateMarker = function(vehicleId, lat, lng, speed = 'Unknown') {
                 if (!markers[vehicleId]) {
                     markers[vehicleId] = L.marker([lat, lng]).addTo(map);
-                    markers[vehicleId].bindPopup(`🚗 Vehicle ${vehicleId}<br>Speed: ${speed} km/h`).openPopup();
+                    markers[vehicleId].bindPopup(
+                        `🚗 Vehicle ${vehicleId}<br>
+                        Latitude: ${lat}<br>
+                        Longitude: ${lng}
+                        <br>Speed: ${speed} km/h`
+                        ).openPopup();
                 } else {
                     markers[vehicleId].setLatLng([lat, lng]);
                     markers[vehicleId].openPopup();

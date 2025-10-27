@@ -103,6 +103,9 @@ new class extends Component {
                             {{ $vehicle->manufacturer->brand }} {{ $vehicle->model }}
                         </h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                            Agr No: <span class="font-medium">{{ $rental->agreement_no }}</span>
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                             Year: <span class="font-medium">{{ $vehicle->year }}</span>
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">

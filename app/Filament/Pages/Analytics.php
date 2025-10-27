@@ -6,6 +6,7 @@ use App\Filament\Resources\Rentals\Widgets\RentalChart;
 use App\Models\Rental;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
+use Filament\Panel;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelPdf\Facades\Pdf;
@@ -13,6 +14,8 @@ use BackedEnum;
 use UnitEnum;
 class Analytics extends Page
 {
+    protected static string $routePath = '/';
+
     protected string $view = 'volt-livewire::filament.pages.analytics';
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedChartBar;
     protected static BackedEnum|string|null $activeNavigationIcon = Heroicon::ChartBar;
@@ -64,6 +67,10 @@ class Analytics extends Page
         ]);
     }
 
+    public static function getRoutePath(Panel $panel): string
+    {
+        return static::$routePath;
+    }
 
     public function getHeading(): string
     {

@@ -7,6 +7,7 @@ use App\Filament\Resources\Payments\Pages\EditPayment;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Filament\Resources\Payments\Schemas\PaymentForm;
 use App\Filament\Resources\Payments\Tables\PaymentsTable;
+use App\Filament\Resources\Rentals\Tables\RentalsTable;
 use App\Models\Payment;
 use BackedEnum;
 use UnitEnum;
@@ -44,7 +45,7 @@ class PaymentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            
+
         ];
     }
 

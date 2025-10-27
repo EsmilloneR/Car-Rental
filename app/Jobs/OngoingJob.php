@@ -72,12 +72,14 @@ class OngoingJob implements ShouldQueue
                 $admin->notify(new RentalCompletedNotification($rental));
 
                 Log::info("Attempting to send Filament notification to admin...");
+
                 Notification::make()
                     ->title('Rental Completed')
                     ->body("The rental for {$rental->user->name} (Agreement No. {$rental->agreement_no}) has been successfully completed.")
                     ->success()
                     ->sendToDatabase($admin)
                     ->broadcast($admin);
+
                 Log::info("Filament notification successfully triggered for admin {$admin->id}");
 
             }

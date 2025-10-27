@@ -18,6 +18,8 @@ class Report extends Page
     protected static BackedEnum|string|null $activeNavigationIcon = Heroicon::Trophy;
     protected static ?string $navigationLabel = 'Most Loyal & Rented';
     // protected static string | UnitEnum | null $navigationGroup  = 'Report Management';
+    protected static string | UnitEnum | null $navigationGroup = 'Analytics';
+
 
     public $topVehicles;
     public $loyalCustomers;

@@ -6,6 +6,7 @@ use App\Models\Rental;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use BackedEnum;
+use UnitEnum;
 
 class RentalCalendar extends Page
 {
@@ -14,6 +15,9 @@ class RentalCalendar extends Page
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::CalendarDateRange ;
     protected static ?string $modelLabel = 'Rental Calendar';
     protected static ?int $navigationSort = 2;
+
+    protected static string | UnitEnum | null $navigationGroup = 'Analytics';
+
     protected ?string $heading = 'Rental Schedule Overview';
     protected ?string $subheading = 'View and track all vehicle rental periods, including pending, ongoing, completed, and cancelled bookings — all in one calendar.';
     public $rentals;

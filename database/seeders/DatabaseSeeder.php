@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::firstOrCreate(
-            ['email' => 'esmillone.rosal1@gmail.com'],
+            ['email' => 'esmillone.rosal@gmail.com'],
             [
                 'name' => 'Esmillone Rosal',
                 'password' => bcrypt('yana210'),

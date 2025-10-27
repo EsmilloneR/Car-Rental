@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Events\PaymentConfirmed;
 use App\Models\Payment;
 use App\Models\Rental;
+use App\Models\User;
+use App\Notifications\PaymentCompletedNotification;
+use App\Notifications\RentalCompletedNotification;
+use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -38,6 +42,24 @@ class PaymentController extends Controller
             'transaction_reference' => 'CRTG-' . strtoupper(uniqid()),
             'status' => Payment::STATUS_COMPLETED,
         ]);
+
+        $admin = User::where('role', 'admin')->first();
+        if ($admin) {
+            $admin->notify(new PaymentCompletedNotification($payment));
+
+            Log::info("Attempting to send Filament notification to admin...");
+
+            Notification::make()
+                ->title('Payment Completed')
+                ->body("The Payment for {$payment->rentals->user->name} (Agreement No. {$payment->rentals->agreement_no}) has been successfully completed.")
+                ->success()
+                ->sendToDatabase($admin)
+                ->broadcast($admin);
+
+            Log::info("Filament notification successfully triggered for admin {$admin->id}");
+
+        }
+
 
         broadcast(new PaymentConfirmed($payment));
 

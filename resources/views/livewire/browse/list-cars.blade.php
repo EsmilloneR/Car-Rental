@@ -1,15 +1,24 @@
 <div class="max-w-7xl mx-auto px-6 py-8">
-    <div class="bg-white dark:bg-gray-900 shadow-md rounded-2xl p-6 mb-8 border border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Filter by Brand</h2>
-        <ul class="flex flex-wrap gap-4">
+
+    <div class="overflow-x-auto scrollbar-hide mb-8">
+        <ul class="flex space-x-3">
+            <li>
+                <button wire:click="$set('selected_slug', [])"
+                    class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium
+                    {{ empty($selected_slug) ? 'bg-white text-black dark:bg-gray-100 dark:text-gray-900' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700' }}">
+                    All
+                </button>
+            </li>
+
             @foreach ($slugs as $slug)
-                <li class="flex items-center space-x-2" wire:key="slug-{{ $slug->id }}">
-                    <input type="checkbox" id="{{ $slug->slug }}" value="{{ $slug->id }}"
-                        wire:model.live="selected_slug"
-                        class="rounded text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 dark:bg-gray-800">
-                    <label for="{{ $slug->slug }}" class="text-lg text-gray-700 dark:text-gray-300 cursor-pointer">
+                <li wire:key="slug-{{ $slug->id }}">
+                    <button wire:click="toggleBrand({{ $slug->id }})"
+                        class="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all
+                        {{ in_array($slug->id, $selected_slug)
+                            ? 'bg-white text-black dark:bg-gray-100 dark:text-gray-900'
+                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700' }}">
                         {{ $slug->brand }}
-                    </label>
+                    </button>
                 </li>
             @endforeach
         </ul>
@@ -72,3 +81,15 @@
         {{ $listCars->links() }}
     </div>
 </div>
+@push('styles')
+    <style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+@endpush

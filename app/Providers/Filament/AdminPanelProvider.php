@@ -50,12 +50,18 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('Home')
                     ->url('/')
                     ->icon('heroicon-o-home')
+                    ->sort(-10),
+
+                NavigationItem::make('Paymongo')
+                    ->url('https://dashboard.paymongo.com/payments')
+                    ->icon('heroicon-o-credit-card')
                     ->sort(-10)
+                    ->openUrlInNewTab()
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                // Dashboard::class,
                 Report::class,
                 CarTracking::class,
                 Analytics::class
