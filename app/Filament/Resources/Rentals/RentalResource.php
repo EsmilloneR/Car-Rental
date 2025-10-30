@@ -82,4 +82,6 @@ class RentalResource extends Resource
     {
         return 'The number of users';
     }
+
+    
 }

@@ -146,18 +146,18 @@ new class extends Component {
                                     this.remaining = '—';
                                     return;
                                 }
-
+                        
                                 const diff = this.endTime - Date.now();
                                 if (diff <= 0) {
                                     this.remaining = 'Expired';
                                     return;
                                 }
-
+                        
                                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                                 const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
                                 const minutes = Math.floor((diff / (1000 * 60)) % 60);
                                 const seconds = Math.floor((diff / 1000) % 60);
-
+                        
                                 this.remaining =
                                     (days > 0 ? days + 'd ' : '') +
                                     (hours > 0 ? hours + 'h ' : '') +
@@ -217,6 +217,8 @@ new class extends Component {
                     </div>
 
                     <div class="p-5 space-y-3 text-gray-700 dark:text-gray-300">
+                        <img src="{{ asset('storage/' . $selectedRental->vehicle->photos[1]) }}"
+                            alt="{{ $selectedRental->vehicle->model }}" class="w-full h-48 object-cover rounded-lg">
                         <p><span class="font-medium">Agreement No:</span> {{ $selectedRental->agreement_no }}</p>
                         <p><span class="font-medium">Vehicle Year:</span> {{ $selectedRental->vehicle->year }}</p>
                         <p><span class="font-medium">Plate Number:</span>

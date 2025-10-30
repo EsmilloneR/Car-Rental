@@ -69,4 +69,9 @@ class VehicleResource extends Resource
     {
         return 'The number of vehicles';
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['manufacturer.brand', 'model', 'plate_number',];
+    }
 }

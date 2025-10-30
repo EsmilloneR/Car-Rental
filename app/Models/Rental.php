@@ -61,8 +61,8 @@ class Rental extends Model
     }
 
     protected $casts = [
-        'rental_start' => 'datetime:Asia/Manila',
-        'rental_end'   => 'datetime:Asia/Manila',
+        'rental_start' => 'datetime',
+        'rental_end'   => 'datetime',
     ];
 
     public function user()
