@@ -2,32 +2,20 @@
 
 namespace App\Events;
 
-use App\Models\Location;
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class GpsEvent implements ShouldBroadcast
+class GpsEvent implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
     public $location;
 
-    public function __construct(Location $location)
+    public function __construct($location)
     {
-        $this->location = [
-            'vehicle_id' => $location->vehicle_id,
-            'latitude'   => $location->latitude,
-            'longitude'  => $location->longitude,
-            'speed'      => $location->speed,
-        ];
+        $this->location = $location;
     }
 
     public function broadcastOn()

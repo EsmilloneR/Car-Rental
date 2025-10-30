@@ -85,5 +85,36 @@
                 </tbody>
             </table>
         </x-filament::card>
+
+
+        <x-filament::card>
+            <h3 class="text-lg font-semibold mb-2">Active Agreements & Payments</h3>
+            <table class="w-full text-left text-sm">
+                <thead class="text-gray-500 border-b">
+                    <tr>
+                        <th class="py-1">User</th>
+                        <th class="py-1">Agreements</th>
+                        <th class="py-1">Total Paid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($this->totalAgreementNo as $item)
+                        <tr class="border-b">
+                            <td class="py-1">{{ $item['user'] }}</td>
+                            <td class="py-1">
+                                {{ implode(', ', $item['agreements']) }}
+                            </td>
+                            <td class="py-1">₱ {{ number_format($item['total_paid'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="py-2 text-center text-gray-500">No active agreements</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </x-filament::card>
+
+
     </div>
 </x-filament::page>

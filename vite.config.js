@@ -13,6 +13,6 @@ export default defineConfig({
     server: {
         cors: true,
         port: 8000,
-        host: "192.168.254.132",
+        host: "192.168.1.242",
     },
 });

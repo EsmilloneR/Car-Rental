@@ -4,26 +4,25 @@
 <head>
     @include('partials.head')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+
+    </style>
 </head>
 
 <body class="bg-gray-900 text-white font-poppins antialiased">
     {{-- HEADER --}}
     <header class="fixed top-0 left-0 w-full z-50">
-        <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+        <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-2">
             <a href="/" class="flex items-center space-x-2 hover:opacity-90 transition">
                 <img src="{{ asset('favicon.ico') }}" alt="Drive & Go" class="h-10 w-10 rounded-full">
-                <span class="text-xl font-semibold tracking-wide">Drive<span class="text-red-500">&</span>Go</span>
+                <span class="text-lg font-semibold tracking-wide">Drive<span class="text-red-500">&</span>Go</span>
             </a>
-
-            <div class="hidden lg:flex items-center gap-x-8">
-                <a href="/about" wire:navigate.hover class="hover:text-red-500 transition">About</a>
-                <a href="/contact" wire:navigate.hover class="hover:text-red-500 transition">Contact</a>
-            </div>
 
             <div class="hidden lg:flex items-center space-x-4">
                 @auth
-                    <flux:dropdown position="bottom" align="end">
-                        <flux:profile circle name="{{ Auth::user()->name }}"
+                    <flux:dropdown position="top" align="end">
+                        <flux:profile name="{{ Auth::user()->name }}" class="cursor-pointer"
                             avatar="{{ Auth::user()->avatar && file_exists(storage_path('app/public/' . Auth::user()->avatar))
                                 ? asset('storage/' . Auth::user()->avatar)
                                 : asset('storage/images/default.jpg') }}" />
@@ -31,7 +30,7 @@
                         <flux:navmenu>
                             @if (Auth::user()->role === 'admin')
                                 <flux:navmenu.item href="/admin" icon="chart-bar" wire:navigate.hover>
-                                    Admin Dashboard
+                                    Admin Analytics
                                 </flux:navmenu.item>
                             @else
                                 <flux:navmenu.item href="{{ url('profile/my-car') }}" icon="truck" wire:navigate.hover>
@@ -67,8 +66,6 @@
 
         <div id="mobile-menu" class="hidden lg:hidden flex flex-col items-center py-6 space-y-5">
             <a href="/list-cars" wire:navigate.hover class="hover:text-red-500">Browse Cars</a>
-            <a href="/about" wire:navigate.hover class="hover:text-red-500">About</a>
-            <a href="/contact" wire:navigate.hover class="hover:text-red-500">Contact</a>
 
             @auth
                 <a href="{{ url('settings/profile') }}" class="font-semibold hover:text-red-500">
@@ -90,7 +87,7 @@
 
         <div class="relative z-10 max-w-2xl px-6">
             <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-fadeIn">
-                Find Your Ride with <span class="text-red-500">Drive & Go</span>
+                Find Your Ride with <span class="text-red-500 drive">Drive & Go</span>
             </h1>
             <p class="text-gray-300 mb-8 text-lg">
                 Rent cars effortlessly. Track them in real time. Travel without limits.
@@ -120,8 +117,18 @@
         });
     </script>
 
-    {{-- FadeIn animation --}}
     <style>
+        .drive {
+            overflow: hidden;
+            animation: typing 2s steps(30) infinite alternate-reverse;
+        }
+
+        @keyframes typing {
+            from {
+                width: 0ch;
+            }
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -138,6 +145,7 @@
             animation: fadeIn 1.2s ease-out forwards;
         }
     </style>
+
 </body>
 
 </html>

@@ -87,6 +87,7 @@ new class extends Component {
                     $this->total = $this->base_amount + $this->deposit;
                     break;
 
+                // Done
                 case 'days':
                     if ($this->rental_start && $this->rental_end) {
                         $start = Carbon::parse($this->rental_start);
@@ -98,34 +99,46 @@ new class extends Component {
                         $this->days = $days;
 
                         $this->base_amount = $days * $this->vehicle->rate_day;
-                        $this->deposit = $this->deposit_percentage * $this->vehicle->rate_day;
+                        $this->deposit = $this->deposit_percentage * $this->base_amount;
 
                         $this->total = $this->deposit + $this->base_amount;
+                        // dd($this->total);
                     }
                     break;
 
+                // Done
                 case 'weeks':
                     if ($this->rental_start && $this->rental_end) {
+                        $weeks = 0;
+
                         $start = Carbon::parse($this->rental_start);
                         $end = Carbon::parse($this->rental_end);
-                        $weeks = max(1, ceil($start->diffInWeeks($end)));
-                        $this->weeks = $weeks;
 
-                        $this->deposit = $this->deposit_percentage * $this->vehicle->rate_day;
-                        $this->total = $this->deposit + $this->vehicle->rate_day * 7 * $weeks;
+                        $totalDays = $start->diffInDays($end);
+
+                        $weeks = max(1, ceil($totalDays / 7) + 1);
+
+                        $this->weeks = $weeks;
+                        $this->base_amount = $this->vehicle->rate_day * 7 * $weeks;
+                        $this->deposit = $this->deposit_percentage * $this->base_amount;
+
+                        $this->total = $this->base_amount + $this->deposit;
                     }
                     break;
 
+                // Done
                 case 'months':
                     if ($this->rental_start && $this->rental_end) {
                         $start = Carbon::parse($this->rental_start);
                         $end = Carbon::parse($this->rental_end);
+
                         $months = max(1, ceil($start->diffInMonths($end)));
+
                         $this->months = $months;
 
-                        // Updated: Calculate deposit based on monthly rate
                         $this->base_amount = $this->vehicle->rate_day * 30 * $months;
                         $this->deposit = $this->deposit_percentage * $this->base_amount;
+                        // dd($this->deposit);
                         $this->total = $this->base_amount + $this->deposit;
                     }
                     break;

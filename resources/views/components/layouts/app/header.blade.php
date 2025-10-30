@@ -13,7 +13,7 @@
             <img src="{{ asset('favicon.ico') }}" onerror="this.src='{{ asset('favicon.ico') }}'" alt="Drive & Go"
                 class="h-9 w-9 rounded-full transition-transform duration-300 group-hover:scale-110">
             <span class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-red-600 mr-5">
-                Drive & Go
+                Drive <span class="text-red-500">&</span> Go
             </span>
         </a>
 
@@ -38,7 +38,8 @@
             <!-- Desktop User Menu -->
             <flux:dropdown position="top" align="end">
                 <flux:profile class="cursor-pointer"
-                    avatar="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('storage/images/default.jpg') }}" />
+                    avatar="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('storage/images/default.jpg') }}"
+                    name="{{ Auth::user()->name }}" />
 
                 <flux:menu>
                     <flux:menu.radio.group>

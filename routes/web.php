@@ -14,7 +14,6 @@ Route::get('/', function () {
 })->name('home');
 
 Volt::route('/about', 'pages.about')->name('about');
-Volt::route('/contact', 'pages.contact')->name('contact');
 
 Route::get('/list-cars', ListCars::class)->name('list-cars');
 Volt::route('/vehicles/{id}/details', 'vehicle.details')->name('vehicle.details');

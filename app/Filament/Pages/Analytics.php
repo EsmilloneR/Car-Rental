@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Resources\Rentals\Widgets\RentalChart;
+use App\Models\Payment;
 use App\Models\Rental;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
@@ -19,7 +20,7 @@ class Analytics extends Page
     protected string $view = 'volt-livewire::filament.pages.analytics';
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedChartBar;
     protected static BackedEnum|string|null $activeNavigationIcon = Heroicon::ChartBar;
-    protected static ?string $navigationLabel = 'Reports';
+    protected static ?string $navigationLabel = 'Dashboard';
     protected static string | UnitEnum | null $navigationGroup = 'Analytics';
     public ?string $from = null;
     public ?string $to = null;
@@ -29,12 +30,14 @@ class Analytics extends Page
     public $rentalsPerVehicle = [];
     public $incomeByDay = [];
 
+    public $totalAgreementNo = 0;
 
     public function mount()
     {
         $this->to = now()->toDateString();
         $this->from = now()->subDays(29)->toDateString();
         $this->refreshStats();
+        $this->listAgreement();
     }
 
 
@@ -66,6 +69,26 @@ class Analytics extends Page
             'to' => $this->to,
         ]);
     }
+
+    public function listAgreement(){
+        $this->totalAgreementNo = Rental::whereIn(
+            'agreement_no',
+            Rental::where('status', '!=', 'completed')->pluck('agreement_no')
+        )
+        ->with('user:id,name')
+        ->get()
+        ->groupBy('user.name')
+        ->map(function ($Rentals, $username) {
+            return [
+                'user' => $username,
+                'agreements' => $Rentals->pluck('agreement_no')->unique()->values()->toArray(),
+                'total_paid' => $Rentals->sum('total'),
+            ];
+        })
+        ->values();
+    }
+
+
 
     public static function getRoutePath(Panel $panel): string
     {

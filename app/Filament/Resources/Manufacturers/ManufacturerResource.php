@@ -27,7 +27,7 @@ class ManufacturerResource extends Resource
     protected ?string $heading = 'Vehicle Manufacturers';
     protected ?string $subheading = 'Manage and maintain the list of vehicle manufacturers available in your system.';
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'brand';
 
     public static function form(Schema $schema): Schema
     {

@@ -78,16 +78,16 @@ class VehicleForm
                         ->maxValue(99999999.99)
                         ->step(0.01)
                         ->placeholder('500.00'),
-                    TextInput::make('rate_week')
-                        ->numeric()
-                        ->prefix('₱')
-                        ->required()
-                        ->minValue(1)
-                        ->maxValue(99999999.99)
-                        ->step(0.01)
-                        ->placeholder('1000.00'),
+                    // TextInput::make('rate_week')
+                    //     ->numeric()
+                    //     ->prefix('₱')
+                    //     ->required()
+                    //     ->minValue(1)
+                    //     ->maxValue(99999999.99)
+                    //     ->step(0.01)
+                    //     ->placeholder('1000.00'),
                 ])
-                ->columns(3),
+                ->columns(2),
 
                 Section::make()->schema([
                     Toggle::make('active')

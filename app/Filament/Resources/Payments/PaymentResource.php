@@ -27,8 +27,9 @@ class PaymentResource extends Resource
 
     // protected static ?string $navigationBadgeTooltip = 'The number of payments';
 
-    protected static ?string $recordTitleAttribute = 'transaction_reference';
+    protected static ?string $recordTitleAttribute = 'amount';
     protected static ?string $modelLabel = 'Payments';
+
 
     protected static ?int $navigationSort = 3;
 

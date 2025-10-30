@@ -65,7 +65,7 @@ class PaymentsTable
 
 
                     Stack::make([
-                        TextColumn::make('amount')
+                        TextColumn::make('total')
                             ->money('PHP', true)
                             ->sortable()
                             ->label('Amount'),

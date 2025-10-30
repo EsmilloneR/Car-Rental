@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\GpsEvent;
-use App\Models\Location;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
 class GpsController extends Controller
@@ -17,12 +17,32 @@ class GpsController extends Controller
             'speed' => 'nullable|numeric',
         ]);
 
-        $location = Location::create($data);
+        $vehicle = Vehicle::with('manufacturer')->find($data['vehicle_id']);
 
+        if (!$vehicle) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Vehicle not found!',
+            ], 404);
+        }
+
+        // Build GPS data payload (no saving to DB)
+        $location = [
+            'vehicle_id' => $vehicle->id,
+            'vehicle_name' => $vehicle->manufacturer->brand ?? 'Unknown Brand',
+            'manufacturer_model' => $vehicle->model ?? 'Unknown Model',
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'speed' => $data['speed'] ?? 0,
+        ];
+
+        // Broadcast to Reverb
         broadcast(new GpsEvent($location))->toOthers();
 
-
-        return response()->json(['success' => true, 'location' => $location]);
+        return response()->json([
+            'success' => true,
+            'message' => 'GPS update broadcasted successfully!',
+            'location' => $location,
+        ]);
     }
-    
 }
