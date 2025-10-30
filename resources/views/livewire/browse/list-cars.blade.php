@@ -52,10 +52,42 @@
                 </div>
 
                 <div class="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-center">
-                    @if ($cars->rentals->isNotEmpty())
-                        <span
+                    @php
+                        $activeRental = $cars->rentals
+                            ->whereIn('status', ['ongoing', 'pending'])
+                            ->sortByDesc('end_time')
+                            ->first();
+
+                        $timeLeft = null;
+                        if ($activeRental && $activeRental->end_time) {
+                            $timeLeft = \Carbon\Carbon::parse($activeRental->end_time)->diffForHumans(null, true);
+                        }
+                    @endphp
+
+                    @if ($activeRental)
+                        <span x-data="{
+                            endTime: new Date('{{ optional($activeRental->rental_end)->toIso8601String() }}').getTime(),
+                            timeLeft: '',
+                            update() {
+                                const now = new Date().getTime();
+                                const distance = this.endTime - now;
+                                if (distance <= 0) {
+                                    this.timeLeft = 'Expired';
+                                    return;
+                                }
+                                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                                this.timeLeft = `${hours}h ${minutes}m ${seconds}s`;
+                            },
+                            init() {
+                                this.update();
+                                setInterval(() => this.update(), 1000);
+                            }
+                        }"
                             class="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium cursor-not-allowed">
                             Reserved
+                            <span class="text-sm text-gray-400">(Time left: <span x-text="timeLeft"></span>)</span>
                         </span>
                     @else
                         <a href="/vehicles/{{ $cars->id }}/payment"
@@ -68,6 +100,8 @@
                             </svg>
                         </a>
                     @endif
+
+
                 </div>
             </div>
         @empty
