@@ -28,12 +28,21 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
+            'id_pictures' => ['required', 'array', 'min:1'],
+            'id_pictures.*' => ['image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ])->validate();
+
+        $idPaths = [];
+        foreach($input['id_pictures'] as $file){
+            $idPaths[] = $file->store('id_pictures', 'public');
+        }
+
 
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'id_pictures' => $idPaths,
         ]);
     }
 }

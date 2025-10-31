@@ -1,6 +1,8 @@
 <x-filament-panels::page>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @filamentStyles
+    @filamentScripts
     @push('scripts')
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js'></script>
         {{-- <script>

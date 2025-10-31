@@ -5,9 +5,6 @@
     @include('partials.head')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-
-    </style>
 </head>
 
 <body class="bg-gray-900 text-white font-poppins antialiased">
@@ -29,7 +26,7 @@
 
                         <flux:navmenu>
                             @if (Auth::user()->role === 'admin')
-                                <flux:navmenu.item href="/admin" icon="chart-bar" wire:navigate.hover>
+                                <flux:navmenu.item href="/admin" icon="chart-bar">
                                     Admin Analytics
                                 </flux:navmenu.item>
                             @else

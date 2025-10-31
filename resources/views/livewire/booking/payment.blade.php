@@ -16,7 +16,7 @@ use App\Events\PaymentConfirmed;
 new class extends Component {
     public $id;
     public $vehicle;
-    public $trip_type = 'pickup_dropOff';
+    public $trip_type = 'hrs';
     public $pickup_location;
     public $dropOff_location;
 
@@ -43,6 +43,8 @@ new class extends Component {
 
     public $paymongo_url;
 
+    public $accepted_terms = false;
+
     public function mount($id)
     {
         $this->id = $id;
@@ -53,7 +55,6 @@ new class extends Component {
     {
         $this->validate([
             'trip_type' => 'required',
-            'pickup_location' => 'nullable|string',
             'dropOff_location' => 'nullable|string',
             'rental_start' => 'nullable',
             'rental_end' => 'nullable',
@@ -61,6 +62,7 @@ new class extends Component {
             'deposit' => 'nullable|numeric|min:1',
             'base_amount' => 'nullable|numeric|min:1',
             'paymongo_url' => 'nullable|string',
+            'accepted_terms' => 'accepted',
         ]);
         return $this->handleOnlinePayment();
     }
@@ -79,12 +81,20 @@ new class extends Component {
             switch ($this->trip_type) {
                 case 'hrs':
                     $ratePerHour = $this->vehicle->rate_day / 10;
-                    $this->rental_start = $this->rental_start ?? now();
-                    $this->rental_end = $this->rental_end ?? now()->addHours(4);
 
-                    $this->base_amount = $this->hours > 0 ? $this->hours * $ratePerHour : 0;
-                    $this->deposit = $this->base_amount * $this->deposit_percentage;
-                    $this->total = $this->base_amount + $this->deposit;
+                    if ($this->rental_start && $this->hours > 0) {
+                        $start = Carbon::parse($this->rental_start);
+
+                        $hours = (int) $this->hours;
+
+                        $this->rental_end = $start->copy()->addHours($hours);
+
+                        $this->base_amount = $hours * $ratePerHour;
+                        $this->deposit = $this->base_amount * $this->deposit_percentage;
+                        $this->total = $this->base_amount + $this->deposit;
+                    } else {
+                        $this->error = 'Please enter a valid pickup time and number of hours.';
+                    }
                     break;
 
                 // Done
@@ -142,13 +152,6 @@ new class extends Component {
                         $this->total = $this->base_amount + $this->deposit;
                     }
                     break;
-
-                case 'pickup_dropOff':
-                    $this->deposit = $this->deposit_percentage * $this->vehicle->rate_day;
-                    $this->total = $this->deposit + max(250, min($this->vehicle->rate_day, 2500));
-
-                    break;
-
                 default:
                     $this->error = 'Invalid trip type selected.';
                     break;
@@ -172,8 +175,7 @@ new class extends Component {
                 'user_id' => Auth::id(),
                 'vehicle_id' => $this->vehicle->id,
                 'trip_type' => $this->trip_type,
-                'pickup_location' => $this->pickup_location,
-                'dropOff_location' => $this->dropOff_location,
+
                 'rental_start' => $this->rental_start,
                 'rental_end' => $this->rental_end,
                 'base_amount' => $this->base_amount,
@@ -320,6 +322,39 @@ new class extends Component {
                                 @endforeach
                             @endif
                         </div>
+                        {{-- Terms & Conditions --}}
+                        <div
+                            class="mt-6 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Terms & Conditions</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                By proceeding with this booking, you agree to the following terms and conditions:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm mt-2 space-y-1">
+                                <li>The renter must present a valid driver’s license and government-issued ID upon
+                                    vehicle pickup.</li>
+                                <li>A refundable security deposit is required and will be returned after vehicle
+                                    inspection.</li>
+                                <li>Any damage, traffic violations, or lost items during the rental period are the
+                                    renter’s responsibility.</li>
+                                <li>Late returns beyond the agreed rental end time may incur additional charges.</li>
+                                <li>No smoking, vaping, or illegal activities are allowed inside the vehicle.</li>
+                                <li>The rental company reserves the right to cancel or modify the booking at any time
+                                    due to unforeseen circumstances.</li>
+                            </ul>
+
+                            <div class="flex items-center mt-4">
+                                <input id="terms" type="checkbox" wire:model.live="accepted_terms"
+                                    class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                                <label for="terms" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    I have read and agree to the Terms & Conditions.
+                                </label>
+                            </div>
+
+                            @error('accepted_terms')
+                                <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                     </div>
 
                     <div>
@@ -345,16 +380,35 @@ new class extends Component {
                                 </label>
                                 <select wire:model.live="trip_type" required
                                     class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    <option value="">-- Select Trip Type --</option>
-                                    <option value="pickup_dropOff">Pick Up & Drop Off Only</option>
                                     <option value="hrs">Hour/s</option>
                                     <option value="days">Day/s</option>
                                     <option value="weeks">Week/s</option>
                                     <option value="months">Months/s</option>
+
                                 </select>
                             </div>
 
 
+                            @if ($trip_type === 'hrs')
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                            Pickup Date & Time
+                                        </label>
+                                        <input type="date" wire:model.live="rental_start" required
+                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                            Number of Hours
+                                        </label>
+                                        <input type="number" min="1" wire:model.live="hours"
+                                            placeholder="Enter number of hours"
+                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                    </div>
+                                </div>
+                            @endif
 
                             @if ($trip_type === 'weeks')
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -364,15 +418,15 @@ new class extends Component {
                                         </label>
                                         <input type="week" wire:model.live="rental_start" required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+
+                                        <div>
+                                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                                Rental End
+                                            </label>
+                                            <input type="week" wire:model.live="rental_end" required
+                                                class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental End
-                                        </label>
-                                        <input type="week" wire:model.live="rental_end" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
                             @endif
 
                             @if ($trip_type === 'days')
@@ -384,6 +438,7 @@ new class extends Component {
                                         <input type="datetime-local" wire:model.live="rental_start" required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
+
                                     <div>
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Rental End
@@ -413,38 +468,8 @@ new class extends Component {
                                 </div>
                             @endif
 
-                            @if ($trip_type === 'hrs')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                    <div class="col-span-2">
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Number of Hours
-                                        </label>
-                                        <input type="number" min="1" wire:model.live="hours"
-                                            placeholder="Enter hours"
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
 
-                            @if ($trip_type === 'pickup_dropOff')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Pickup Location
-                                        </label>
-                                        <input type="text" wire:model.live="pickup_location" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Drop Off Location
-                                        </label>
-                                        <input type="text" wire:model.live="dropOff_location" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
-
+                            {{-- Booking Summary --}}
                             <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
                                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Booking Summary
                                 </h3>
@@ -459,6 +484,15 @@ new class extends Component {
                                                 {{ str_replace('_', ' & ', $trip_type) }}
                                             </span>
                                         </li>
+                                        @if ($rental_start)
+                                            <li>
+                                                Car Pickup Day:
+                                                <span
+                                                    class="font-semibold capitalize text-gray-900 dark:text-gray-100">
+                                                    {{ \Carbon\Carbon::parse($rental_start)->format('l') }}
+                                                </span>
+                                            </li>
+                                        @endif
 
                                         {{-- For Hours --}}
                                         @if ($trip_type === 'hrs')
@@ -492,10 +526,10 @@ new class extends Component {
 
                                         {{-- For Weeks --}}
                                         @if ($trip_type === 'weeks')
-                                            <li>Weeks: <span class="font-semibold">{{ $weeks ?: 0 }}</span></li>
-                                            <li>Rate/Week:
+                                            <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span></li>
+                                            <li>Rate/Month:
                                                 <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day * 7, 'PHP') }}
+                                                    {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
                                                 </span>
                                             </li>
                                             <li>Deposit:
@@ -568,19 +602,17 @@ new class extends Component {
 
                                 <button type="submit"
                                     class="w-full p-4 rounded-md text-white transition
-               {{ $isInvalid ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' }}"
-                                    {{ $isInvalid ? 'disabled' : '' }}>
+                                    {{ $isInvalid || !$accepted_terms ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' }}"
+                                    {{ $isInvalid || !$accepted_terms ? 'disabled' : '' }}>
                                     <span wire:loading.remove>Continue to Confirmation</span>
                                     <span wire:loading>Processing...</span>
                                 </button>
                             </div>
-
                         </form>
-
+                        {{-- End Of Form --}}
                     </div>
                 </div>
             </section>
-
         </div>
 
     @endif

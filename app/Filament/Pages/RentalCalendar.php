@@ -28,7 +28,7 @@ class RentalCalendar extends Page
         ->get()
         ->map(function ($rental) {
             return [
-                'title' => $rental->vehicle->manufacturer->name.''.$rental->vehicle->model.'('.ucfirst($rental->status).')',
+                'title' => ' ('. $rental->user->name.') ' . $rental->vehicle->manufacturer->brand. ' '.$rental->vehicle->model.'('.ucfirst($rental->status).')',
                 'start' => $rental->rental_start,
                 'end' => $rental->rental_end,
                 'color' => match($rental->status){
