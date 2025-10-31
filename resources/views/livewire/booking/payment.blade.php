@@ -81,11 +81,13 @@ new class extends Component {
             switch ($this->trip_type) {
                 case 'hrs':
                     $ratePerHour = $this->vehicle->rate_day / 24;
+                    $ratePerHour = $this->vehicle->rate_day / 10;
 
                     if ($this->rental_start && $this->hours > 0) {
                         $start = Carbon::parse($this->rental_start);
 
                         $hours = (int) $this->hours;
+
                         $this->rental_end = $start->copy()->addHours($hours);
 
                         $this->base_amount = $hours * $ratePerHour;
@@ -521,6 +523,10 @@ new class extends Component {
                                         @if ($trip_type === 'weeks')
                                             <li>Week/s: <span class="font-semibold">{{ $weeks ?: 0 }}</span></li>
                                             <li>Rate/Week:
+                                            <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span>
+                                            </li>
+                                            <li>Rate/Month:
+                                                >>>>>>> 847b50665ae2ffdaac6a3e4bb51ffac3a51c61e5
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
                                                 </span>
