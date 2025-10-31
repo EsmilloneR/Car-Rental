@@ -3,6 +3,10 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import { Calendar } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
 
 L.Icon.Default.mergeOptions({
     iconUrl: markerIcon,

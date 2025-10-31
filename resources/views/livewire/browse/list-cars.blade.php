@@ -46,7 +46,7 @@
                         </span>
                         —
                         <span class="text-green-600 dark:text-green-400 font-semibold">
-                            {{ Number::currency($cars->rate_week, 'PHP') }}
+                            {{ Number::currency($cars->rate_day, 'PHP') }}
                         </span>
                     </p>
                 </div>

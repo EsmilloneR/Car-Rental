@@ -3,7 +3,13 @@
     $icon = file_exists($iconPath) ? base64_encode(file_get_contents($iconPath)) : '';
 @endphp
 
-@include('partials.head')
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    @include('partials.head')
+</head>
 
 
 
@@ -156,3 +162,5 @@
         </div>
     </div>
 </body>
+
+</html>

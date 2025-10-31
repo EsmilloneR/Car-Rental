@@ -80,13 +80,12 @@ new class extends Component {
         try {
             switch ($this->trip_type) {
                 case 'hrs':
-                    $ratePerHour = $this->vehicle->rate_day / 10;
+                    $ratePerHour = $this->vehicle->rate_day / 24;
 
                     if ($this->rental_start && $this->hours > 0) {
                         $start = Carbon::parse($this->rental_start);
 
                         $hours = (int) $this->hours;
-
                         $this->rental_end = $start->copy()->addHours($hours);
 
                         $this->base_amount = $hours * $ratePerHour;
@@ -258,17 +257,11 @@ new class extends Component {
 <div>
     @php
         $isReserved = Rental::where('vehicle_id', $vehicle->id)
-            ->whereIn('status', ['pending', 'reserved'])
-            ->exists();
-
-        $hasPayment = Payment::whereHas('rentals', function ($q) use ($vehicle) {
-            $q->where('vehicle_id', $vehicle->id);
-        })
-            ->whereIn('status', ['completed'])
+            ->whereIn('status', ['pending', 'reserved', 'ongoing'])
             ->exists();
     @endphp
 
-    @if ($isReserved || $hasPayment)
+    @if ($isReserved)
         <div x-data="{
             count: 5,
             startCountdown() {
@@ -526,8 +519,8 @@ new class extends Component {
 
                                         {{-- For Weeks --}}
                                         @if ($trip_type === 'weeks')
-                                            <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span></li>
-                                            <li>Rate/Month:
+                                            <li>Week/s: <span class="font-semibold">{{ $weeks ?: 0 }}</span></li>
+                                            <li>Rate/Week:
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
                                                 </span>

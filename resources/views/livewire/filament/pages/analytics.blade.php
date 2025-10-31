@@ -2,6 +2,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @filamentStyles
     @filamentScripts
+
     <div class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <x-filament::card>

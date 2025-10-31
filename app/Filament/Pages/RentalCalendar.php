@@ -25,6 +25,7 @@ class RentalCalendar extends Page
     public function mount()
     {
         $this->rentals = Rental::with('vehicle.manufacturer')
+        ->where('status', '!=', 'completed')
         ->get()
         ->map(function ($rental) {
             return [
@@ -34,7 +35,6 @@ class RentalCalendar extends Page
                 'color' => match($rental->status){
                     'pending' => '#facc15',
                     'ongoing' => '#3b82f6',
-                    'completed' => '#22c55e',
                     'cancelled' => '#ef4444',
                     default => '#6b7280'
                 },
