@@ -13,6 +13,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
@@ -21,6 +22,10 @@ class UsersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->groups([
+                'role'
+            ])->defaultGroup('role')
+
             ->columns([
                 Split::make([
                     ImageColumn::make('avatar')
@@ -50,7 +55,11 @@ class UsersTable
                 ]),
             ])
             ->filters([
-                //
+                SelectFilter::make('role')
+                ->options([
+                    'admin' => 'Admin',
+                    'renter' => 'Renter',
+                ]),
             ])
             ->recordActions([
                 ActionGroup::make([

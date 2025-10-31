@@ -75,7 +75,7 @@ class OngoingJob implements ShouldQueue
 
                 Notification::make()
                     ->title('Rental Completed')
-                    ->body("The rental for {$rental->user->name} (Agreement No. {$rental->agreement_no}) has been successfully completed.")
+                    ->body("Rental Agreement No. {$rental->agreement_no}, belonging to {$rental->user->name}, has reached its end date and has been marked as completed automatically.")
                     ->success()
                     ->sendToDatabase($admin)
                     ->broadcast($admin);

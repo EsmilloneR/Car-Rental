@@ -76,13 +76,6 @@ class RentalForm
                         ->label('End Date/Time')
                         ->required(),
 
-                    TextInput::make('pickup_location')
-                        ->default('Davao City')
-                        ->nullable(),
-                    TextInput::make('dropOff_location')
-                        ->default('Cagayan De Oro City')
-                        ->nullable(),
-
                     Select::make('trip_type')
                         ->options([
                         'pickup_dropOff' => 'Pickup drop off',

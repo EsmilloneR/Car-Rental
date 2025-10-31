@@ -38,7 +38,7 @@ class PaymentController extends Controller
         $payment = Payment::create([
             'rental_id' => $rental->id,
             'payment_method' => 'online_payment',
-            'amount' => $rental->base_amount,
+            'amount' => $rental->total,
             'transaction_reference' => 'CRTG-' . strtoupper(uniqid()),
             'status' => Payment::STATUS_COMPLETED,
         ]);
@@ -61,7 +61,12 @@ class PaymentController extends Controller
         }
 
 
+        try{
+
         broadcast(new PaymentConfirmed($payment));
+        }catch(\Throwable $e){
+            Log::warning("Broadcast failed for payment {$payment->id}: " . $e->getMessage());
+        }
 
         session()->forget(['pending_rental_id']);
 

@@ -2,7 +2,8 @@
     <div id="map" class="w-full h-[600px] rounded-xl shadow"></div>
 
     @vite(['resources/js/app.js', 'resources/css/app.css'])
-
+    @filamentStyles
+    @filamentScripts
     <script data-navigate-once>
         let map;
 

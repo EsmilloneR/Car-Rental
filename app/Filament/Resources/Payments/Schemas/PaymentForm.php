@@ -29,8 +29,8 @@ class PaymentForm
                     ->prefix('₱')
                     ->minValue(0),
 
-                TextInput::make('transaction_reference')
-                    ->label('Reference Number')
+                TextInput::make('payment_method')
+                    ->label('Payment Method')
                     ->visible(fn($get) => $get('payment_method') !== 'cash')
                     ->maxLength(255)
                     ->disabled()
