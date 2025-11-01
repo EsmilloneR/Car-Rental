@@ -80,10 +80,6 @@ Make sure you have the following installed:
 
 Build **Car-Rental** from the source and install dependencies.
 
-#### 1️⃣ Clone the repository:
-=======
-### 1️⃣ Clone the repository:
-=======
 ### 1️⃣ Clone the repository:
 ```bash
 git clone https://github.com/EsmilloneR/Car-Rental.git
