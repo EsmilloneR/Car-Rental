@@ -88,7 +88,7 @@ new class extends Component {
 
                         $hours = (int) $this->hours;
 
-                        $this->rental_end = $start->copy()->addHours($hours);
+                        $this->rental_end = $start->copy()->addHours($hours)->format('Y-m-d\TH:i');
 
                         $this->base_amount = $hours * $ratePerHour;
                         $this->deposit = $this->base_amount * $this->deposit_percentage;
