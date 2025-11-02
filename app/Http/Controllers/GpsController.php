@@ -29,8 +29,8 @@ class GpsController extends Controller
         // Build GPS data payload (no saving to DB)
         $location = [
             'vehicle_id' => $vehicle->id,
-            'vehicle_name' => $vehicle->manufacturer->brand ?? 'Unknown Brand',
-            'manufacturer_model' => $vehicle->model ?? 'Unknown Model',
+            'manufacturer_brand' => $vehicle->manufacturer->brand ?? 'Unknown Brand',
+            'vehicle_model' => $vehicle->model ?? 'Unknown Model',
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'speed' => $data['speed'] ?? 0,

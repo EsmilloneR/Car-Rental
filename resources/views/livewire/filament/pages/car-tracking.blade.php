@@ -58,8 +58,8 @@
                             event.location.latitude,
                             event.location.longitude,
                             event.location.speed,
-                            event.location.vehicle_name,
-                            event.location.manufacturer_brand
+                            event.location.manufacturer_brand,
+                            event.location.vehicle_model
                         );
                     } else {
                         console.warn("⚠️ Missing coordinates in GPS event:", event);

@@ -213,7 +213,7 @@ new class extends Component {
                                     'quantity' => 1,
                                 ],
                             ],
-                            'payment_method_types' => ['card', 'gcash', 'paymaya'],
+                            'payment_method_types' => ['card', 'gcash', 'paymaya', 'qrph'],
                             'statement_descriptor' => 'Drive & Go Rentals',
                             'metadata' => [
                                 'rental_id' => $rental->id,
