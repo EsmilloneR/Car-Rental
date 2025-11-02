@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('phone_verified_at')->nullable()->change();
+        Schema::table('rentals', function (Blueprint $table) {
+            $table->decimal('pickup_lat', 10, 7)->nullable();
+            $table->decimal('pickup_lng', 10, 7)->nullable();
+            $table->decimal('dropoff_lat', 10, 7)->nullable();
+            $table->decimal('dropoff_lng', 10, 7)->nullable();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            Schema::dropIfExists('users');
-        });
+        Schema::dropIfExists('rentals');
     }
 };

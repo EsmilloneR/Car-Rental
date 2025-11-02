@@ -26,10 +26,12 @@
             window.updateMarker = function(vehicleId, lat, lng, speed = 'Unknown', vehicleName = 'Unknown', brand =
                 'Unknown') {
                 const popupContent = `
-                🚗 <b>${brand} ${vehicleName}</b><br>
+                <b>
+                Vehicle: ${brand} ${vehicleName}<br>
                 Latitude: ${lat}<br>
                 Longitude: ${lng}<br>
                 Speed: ${speed} km/h
+                </b>
             `;
 
                 if (!markers[vehicleId]) {

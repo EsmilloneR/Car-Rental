@@ -16,7 +16,7 @@ class CarTracking extends Page
     protected ?string $heading = 'GPS Vehicle Tracking';
     protected ?string $subheading = 'Real-time visualization of vehicle positions powered by GPS data. Keep your fleet under control at all times.';
     protected static ?string $navigationLabel = "Vehicle Locations";
-    protected static string | UnitEnum | null $navigationGroup = 'Fleet Management';
+    // protected static string | UnitEnum | null $navigationGroup = 'Fleet Management';
 
 
 

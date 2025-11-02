@@ -379,6 +379,7 @@ new class extends Component {
                                     <option value="days">Day/s</option>
                                     <option value="weeks">Week/s</option>
                                     <option value="months">Months/s</option>
+                                    <option value="pickup_dropOff">Pickup and Drop Off</option>
 
                                 </select>
                             </div>
@@ -497,7 +498,7 @@ new class extends Component {
                                                     {{ Number::currency($vehicle->rate_day / 10, 'PHP') }}
                                                 </span>
                                             </li>
-                                            <li>Deposit:
+                                            <li>Deposit (30%):
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($this->deposit, 'PHP') }}
                                                 </span>
@@ -512,7 +513,7 @@ new class extends Component {
                                                     {{ Number::currency($vehicle->rate_day, 'PHP') }}
                                                 </span>
                                             </li>
-                                            <li>Deposit:
+                                            <li>Deposit (30%):
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($this->deposit, 'PHP') }}
                                                 </span>
@@ -522,16 +523,13 @@ new class extends Component {
                                         {{-- For Weeks --}}
                                         @if ($trip_type === 'weeks')
                                             <li>Week/s: <span class="font-semibold">{{ $weeks ?: 0 }}</span></li>
-                                            <li>Rate/Week:
-                                            <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span>
                                             </li>
-                                            <li>Rate/Month:
-                                                >>>>>>> 847b50665ae2ffdaac6a3e4bb51ffac3a51c61e5
+                                            <li>Rate/Weeks:
                                                 <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
+                                                    {{ Number::currency($vehicle->rate_day * 7, 'PHP') }}
                                                 </span>
                                             </li>
-                                            <li>Deposit:
+                                            <li>Deposit (30%):
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($this->deposit, 'PHP') }}
                                                 </span>
@@ -546,7 +544,7 @@ new class extends Component {
                                                     {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
                                                 </span>
                                             </li>
-                                            <li>Deposit:
+                                            <li>Deposit (30%):
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($this->deposit, 'PHP') }}
                                                 </span>
