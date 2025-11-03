@@ -29,7 +29,7 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
             'id_pictures' => ['required', 'array', 'min:1'],
-            'id_pictures.*' => ['image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'id_pictures.*' => ['image', 'mimes:jpeg,png,jpg'],
         ])->validate();
 
         $idPaths = [];

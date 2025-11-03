@@ -117,43 +117,6 @@ new class extends Component {
                     }
                     break;
 
-                // Done
-                case 'weeks':
-                    if ($this->rental_start && $this->rental_end) {
-                        $weeks = 0;
-
-                        $start = Carbon::parse($this->rental_start);
-                        $end = Carbon::parse($this->rental_end);
-
-                        $totalDays = $start->diffInDays($end);
-
-                        $weeks = max(1, ceil($totalDays / 7));
-
-                        $this->weeks = $weeks;
-                        $this->base_amount = $this->vehicle->rate_day * 7 * $weeks;
-                        $this->deposit = $this->deposit_percentage * $this->base_amount;
-
-                        $this->total = $this->base_amount + $this->deposit;
-                    }
-                    break;
-
-                // Done
-                case 'months':
-                    if ($this->rental_start && $this->rental_end) {
-                        $start = Carbon::parse($this->rental_start);
-                        $end = Carbon::parse($this->rental_end);
-
-                        $months = max(1, ceil($start->diffInMonths($end)));
-
-                        $this->months = $months;
-
-                        $this->base_amount = $this->vehicle->rate_day * 30 * $months;
-                        $this->deposit = $this->deposit_percentage * $this->base_amount;
-                        // dd($this->deposit);
-                        $this->total = $this->base_amount + $this->deposit;
-                    }
-                    break;
-
                 case 'pickup_dropOff':
                     if (!empty($this->pickup_location) && !empty($this->dropOff_location) && $this->rental_start && $this->rental_end) {
                         $this->base_amount = max(250, min($this->vehicle->rate_day, 2500));
@@ -388,8 +351,6 @@ new class extends Component {
                                     class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     <option value="hrs">Hour/s</option>
                                     <option value="days">Day/s</option>
-                                    <option value="weeks">Week/s</option>
-                                    <option value="months">Months/s</option>
                                     <option value="pickup_dropOff">Pickup and Drop Off</option>
 
                                 </select>
@@ -417,24 +378,7 @@ new class extends Component {
                                 </div>
                             @endif
 
-                            @if ($trip_type === 'weeks')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental Start
-                                        </label>
-                                        <input type="week" wire:model.live="rental_start" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
 
-                                        <div>
-                                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                                Rental End
-                                            </label>
-                                            <input type="week" wire:model.live="rental_end" required
-                                                class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                        </div>
-                                    </div>
-                            @endif
 
                             @if ($trip_type === 'days')
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -456,24 +400,7 @@ new class extends Component {
                                 </div>
                             @endif
 
-                            @if ($trip_type === 'months')
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental Start
-                                        </label>
-                                        <input type="month" wire:model.live="rental_start" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                                            Rental End
-                                        </label>
-                                        <input type="month" wire:model.live="rental_end" required
-                                            class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
-                                    </div>
-                                </div>
-                            @endif
+
 
                             @if ($trip_type === 'pickup_dropOff')
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -569,53 +496,6 @@ new class extends Component {
                                             </li>
                                         @endif
 
-                                        {{-- For Weeks --}}
-                                        @if ($trip_type === 'weeks')
-                                            <li>Week/s:
-                                                <span class="font-semibold">{{ $weeks ?: 0 }}</span>
-                                            </li>
-                                            <li>Pickup:
-                                                <span
-                                                    class="font-semibold">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}
-                                                </span>
-                                            </li>
-                                            <li>Drop-off:
-                                                <span
-                                                    class="font-semibold">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}
-                                                </span>
-                                            </li>
-                                            <li>Rate/Weeks:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day * 7, 'PHP') }}
-                                                </span>
-                                            </li>
-                                            <li>Deposit (30%):
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($this->deposit, 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
-
-                                        {{-- For Months --}}
-                                        @if ($trip_type === 'months')
-                                            <li>Months: <span class="font-semibold">{{ $months ?: 0 }}</span></li>
-                                            <li>Pickup: <span
-                                                    class="font-semibold">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
-                                            </li>
-                                            <li>Drop-off: <span
-                                                    class="font-semibold">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
-                                            </li>
-                                            <li>Rate/Month:
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($vehicle->rate_day * 30, 'PHP') }}
-                                                </span>
-                                            </li>
-                                            <li>Deposit (30%):
-                                                <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($this->deposit, 'PHP') }}
-                                                </span>
-                                            </li>
-                                        @endif
 
                                         {{-- For Pickup & DropOff --}}
                                         @if ($trip_type === 'pickup_dropOff')
