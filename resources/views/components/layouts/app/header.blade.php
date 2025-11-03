@@ -62,14 +62,13 @@
 
                     <flux:menu.radio.group>
 
-                        @if (Auth::user()->role === 'admin' || Auth::user()->role === 'super-admin')
-                            <flux:menu.item href="/admin" icon="chart-bar" wire:navigate.hover>{{ __('Admin Dashoard') }}
-                            </flux:menu.item>
-                        @else
-                            <flux:menu.item :href="route('profile.mycar')" icon="truck" wire:navigate.hover>
-                                {{ __('My Rent') }}
+                        @if (Auth::user()->role === 'admin')
+                            <flux:menu.item href="/admin" icon="chart-bar" wire:navigate.hover>{{ __('Admin Analytics') }}
                             </flux:menu.item>
                         @endif
+                        <flux:menu.item :href="route('profile.mycar')" icon="truck" wire:navigate.hover>
+                            {{ __('My Rent') }}
+                        </flux:menu.item>
                         <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate.hover>
                             {{ __('Settings') }}
                         </flux:menu.item>
@@ -113,6 +112,12 @@
         @auth
 
             <flux:navlist variant="outline">
+
+                @if (Auth::user()->role === 'admin')
+                    <flux:navlist.item icon="truck" href="/admin" wire:navigate.hover>
+                        {{ __('Admin Analytics') }}
+                    </flux:navlist.item>
+                @endif
                 <flux:navlist.item icon="truck" :href="route('profile.mycar')" wire:navigate.hover>
                     {{ __('My Rent') }}
                 </flux:navlist.item>

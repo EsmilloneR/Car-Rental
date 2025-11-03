@@ -29,11 +29,10 @@
                                 <flux:navmenu.item href="/admin" icon="chart-bar">
                                     Admin Analytics
                                 </flux:navmenu.item>
-                            @else
-                                <flux:navmenu.item href="{{ url('profile/my-car') }}" icon="truck" wire:navigate.hover>
-                                    My Rent
-                                </flux:navmenu.item>
                             @endif
+                            <flux:navmenu.item href="{{ url('profile/my-car') }}" icon="truck" wire:navigate.hover>
+                                My Rent
+                            </flux:navmenu.item>
                             <flux:navmenu.item href="{{ url('settings/profile') }}" icon="cog" wire:navigate.hover>
                                 Settings
                             </flux:navmenu.item>
