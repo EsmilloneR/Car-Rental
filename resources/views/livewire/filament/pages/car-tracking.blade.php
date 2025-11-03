@@ -42,6 +42,8 @@
                 maxZoom: 19,
                 attribution: '© Drive & Go - Twayne Garage',
             }).addTo(map);
+            
+            map.attributionControl.setPrefix(false);
 
             console.log('📡 Listening for GPS updates...');
             let markers = {};
