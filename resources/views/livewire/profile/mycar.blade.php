@@ -146,18 +146,18 @@ new class extends Component {
                                     this.remaining = '—';
                                     return;
                                 }
-                        
+
                                 const diff = this.endTime - Date.now();
                                 if (diff <= 0) {
                                     this.remaining = 'Expired';
                                     return;
                                 }
-                        
+
                                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                                 const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
                                 const minutes = Math.floor((diff / (1000 * 60)) % 60);
                                 const seconds = Math.floor((diff / 1000) % 60);
-                        
+
                                 this.remaining =
                                     (days > 0 ? days + 'd ' : '') +
                                     (hours > 0 ? hours + 'h ' : '') +
@@ -259,12 +259,12 @@ new class extends Component {
                         @endif
 
                         {{-- ✅ View Receipt button for completed rentals --}}
-                        @if ($selectedRental->status === 'completed')
+                        {{-- @if ($selectedRental->status === 'completed')
                             <a href="{{ route('payments.receipt', $selectedRental->id) }}" target="_blank"
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
                                 View Receipt
                             </a>
-                        @endif
+                        @endif --}}
 
                         <button wire:click="closeModal"
                             class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200">

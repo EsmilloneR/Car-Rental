@@ -224,7 +224,7 @@ new class extends Component {
                                     'quantity' => 1,
                                 ],
                             ],
-                            'payment_method_types' => ['card', 'gcash', 'paymaya', 'qrph'],
+                            'payment_method_types' => ['card', 'qrph', 'paymaya'],
                             'statement_descriptor' => 'Drive & Go Rentals',
                             'metadata' => [
                                 'rental_id' => $rental->id,
@@ -402,7 +402,7 @@ new class extends Component {
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Pickup Date & Time
                                         </label>
-                                        <input type="date" wire:model.live="rental_start" required
+                                        <input type="datetime-local" wire:model.live="rental_start" required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
 
