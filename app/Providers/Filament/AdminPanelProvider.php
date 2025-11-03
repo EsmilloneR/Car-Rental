@@ -90,7 +90,6 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
                 AdminMiddleware::class,
             ])
-            ->spa(hasPrefetching: true)
 
             ->authGuard('web');
     }

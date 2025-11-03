@@ -13,7 +13,7 @@
         <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-2">
             <a href="/" class="flex items-center space-x-2 hover:opacity-90 transition">
                 <img src="{{ asset('favicon.ico') }}" alt="Drive & Go" class="h-10 w-10 rounded-full">
-                <span class="text-lg font-semibold tracking-wide">Drive<span class="text-red-500">&</span>Go</span>
+                <span class="text-lg font-semibold ">Drive<span class="text-red-500">&</span>Go</span>
             </a>
 
             <div class="hidden lg:flex items-center space-x-4">
@@ -114,15 +114,19 @@
     </script>
 
     <style>
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%
+            }
+        }
+
         .drive {
             overflow: hidden;
             animation: typing 2s steps(30) infinite alternate-reverse;
-        }
-
-        @keyframes typing {
-            from {
-                width: 0ch;
-            }
         }
 
         @keyframes fadeIn {
@@ -141,6 +145,9 @@
             animation: fadeIn 1.2s ease-out forwards;
         }
     </style>
+
+
+
 
 </body>
 
