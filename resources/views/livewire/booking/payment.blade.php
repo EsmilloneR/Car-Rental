@@ -362,7 +362,8 @@ new class extends Component {
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Pickup Date & Time
                                         </label>
-                                        <input type="datetime-local" wire:model.live="rental_start" required
+                                        <input type="datetime-local" min="2025-01-01T00:00"
+                                            wire:model.live="rental_start" required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
 
@@ -385,7 +386,8 @@ new class extends Component {
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Rental Start
                                         </label>
-                                        <input type="datetime-local" wire:model.live="rental_start" required
+                                        <input type="datetime-local" min="2025-01-01T00:00"
+                                            wire:model.live="rental_start" required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
 
@@ -393,7 +395,8 @@ new class extends Component {
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Rental End
                                         </label>
-                                        <input type="datetime-local" wire:model.live="rental_end" required
+                                        <input type="datetime-local" min="2025-01-01T00:00" wire:model.live="rental_end"
+                                            required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
                                 </div>
@@ -407,7 +410,8 @@ new class extends Component {
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Pickup Date & Time
                                         </label>
-                                        <input type="datetime-local" wire:model.live="rental_start" required
+                                        <input type="datetime-local" min="2025-01-01T00:00"
+                                            wire:model.live="rental_start" required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
 
@@ -415,7 +419,8 @@ new class extends Component {
                                         <label class="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                                             Drop-off Date & Time
                                         </label>
-                                        <input type="datetime-local" wire:model.live="rental_end" required
+                                        <input type="datetime-local" min="2025-01-01T00:00" wire:model.live="rental_end"
+                                            required
                                             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
                                     </div>
 

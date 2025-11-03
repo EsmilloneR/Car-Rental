@@ -28,6 +28,7 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
+            'phone_number' => ['required', 'max:20', 'min:2'],
             'id_pictures' => ['required', 'array', 'min:1'],
             'id_pictures.*' => ['image', 'mimes:jpeg,png,jpg'],
         ])->validate();
@@ -43,6 +44,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'password' => $input['password'],
             'id_pictures' => $idPaths,
+            'phone_number' => $input['phone_number'],
         ]);
     }
 }

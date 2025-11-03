@@ -18,7 +18,7 @@ new class extends Component {
 
         // Example email sending (works if Mail config is set)
         Mail::raw("Message from: {$this->name} <{$this->email}>\n\n{$this->message}", function ($msg) {
-            $msg->to('cloacalkissed14@yahoo.com')->subject('New Contact Message');
+            $msg->to('TwayneGarageTravels@gmail.com')->subject('New Contact Message');
         });
 
         session()->flash('success', '✅ Thank you! Your message has been sent successfully.');
@@ -101,7 +101,7 @@ new class extends Component {
                 <ul class="space-y-4 text-gray-700 dark:text-gray-300">
                     <li class="flex items-start space-x-3">
                         <i class="fa-solid fa-envelope text-red-600 text-xl mt-1"></i>
-                        <span>cloacalkissed14@yahoo.com</span>
+                        <span>TwayneGarageTravels@gmail.com</span>
                     </li>
                     <li class="flex items-start space-x-3">
                         <i class="fa-solid fa-phone text-red-600 text-xl mt-1"></i>

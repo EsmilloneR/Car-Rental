@@ -16,6 +16,10 @@
             <flux:input name="email" :label="__('Email address')" type="email" required autocomplete="email"
                 placeholder="email@gmail.com" />
 
+            <!-- Phone Number -->
+            <flux:input name="phone_number" :label="__('Phone Number')" type="tel" required
+                autocomplete="phone_number" placeholder="+63" />
+
             <!-- Password -->
             <flux:input name="password" :label="__('Password')" type="password" required autocomplete="new-password"
                 :placeholder="__('Password')" viewable />
@@ -25,10 +29,10 @@
                 autocomplete="new-password" :placeholder="__('Confirm password')" viewable />
 
             <div>
-                <label for="" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label for="id_pictures" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {{ __('ID Pictures (Minimum 1)') }}
                 </label>
-                <input type="file" name="id_pictures[]" accept="image/*" multiple required
+                <input id="id_pictures" type="file" name="id_pictures[]" accept="image/*" multiple required
                     class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Front ID Picture
