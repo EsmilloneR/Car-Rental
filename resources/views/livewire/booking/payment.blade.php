@@ -187,7 +187,7 @@ new class extends Component {
                                     'quantity' => 1,
                                 ],
                             ],
-                            'payment_method_types' => ['card', 'qrph', 'paymaya'],
+                            'payment_method_types' => ['card', 'qrph', 'gcash', 'paymaya'],
                             'statement_descriptor' => 'Drive & Go Rentals',
                             'metadata' => [
                                 'rental_id' => $rental->id,
@@ -352,7 +352,6 @@ new class extends Component {
                                     <option value="hrs">Hour/s</option>
                                     <option value="days">Day/s</option>
                                     <option value="pickup_dropOff">Pickup and Drop Off</option>
-
                                 </select>
                             </div>
 
@@ -468,7 +467,15 @@ new class extends Component {
 
                                         {{-- For Hours --}}
                                         @if ($trip_type === 'hrs')
-                                            <li>Hours: <span class="font-semibold">{{ $hours ?: 0 }}</span></li>
+                                            <li>Hours: <span
+                                                    class="font-semibold text-green-600">{{ $hours ?: 0 }}</span>
+                                            </li>
+                                            <li>Pickup: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
+                                            </li>
+                                            <li>Drop-off: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
+                                            </li>
                                             <li>Rate/Hour:
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($vehicle->rate_day / 10, 'PHP') }}
@@ -483,12 +490,21 @@ new class extends Component {
 
                                         {{-- For Days --}}
                                         @if ($trip_type === 'days')
-                                            <li>Days: <span class="font-semibold">{{ $days ?: 0 }}</span></li>
+                                            <li>Days: <span
+                                                    class="font-semibold text-green-600">{{ $days ?: 0 }}</span>
+                                            </li>
+                                            <li>Pickup: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
+                                            </li>
+                                            <li>Drop-off: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
+                                            </li>
                                             <li>Rate/Day:
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($vehicle->rate_day, 'PHP') }}
                                                 </span>
                                             </li>
+
                                             <li>Deposit (30%):
                                                 <span class="font-semibold text-green-600">
                                                     {{ Number::currency($this->deposit, 'PHP') }}
@@ -500,10 +516,10 @@ new class extends Component {
                                         {{-- For Pickup & DropOff --}}
                                         @if ($trip_type === 'pickup_dropOff')
                                             <li>Pickup: <span
-                                                    class="font-semibold">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
                                             </li>
                                             <li>Drop-off: <span
-                                                    class="font-semibold">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
                                             </li>
                                             <li>Flat Rate:
                                                 <span class="font-semibold text-green-600">
