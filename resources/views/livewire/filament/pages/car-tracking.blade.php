@@ -1,5 +1,5 @@
 <x-filament::page>
-    <div id="map" class="w-full h-[600px] rounded-xl shadow"></div>
+    <div id="map" class="w-full h-[600px] rounded-xl shadow z-0"></div>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
