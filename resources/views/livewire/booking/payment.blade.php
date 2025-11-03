@@ -470,11 +470,12 @@ new class extends Component {
                                             <li>Hours: <span
                                                     class="font-semibold text-green-600">{{ $hours ?: 0 }}</span>
                                             </li>
-                                            <li>Pickup: <span
-                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
+                                            <li>Rental Start: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('F j, Y, g:i a') }}
+                                                </span>
                                             </li>
-                                            <li>Drop-off: <span
-                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
+                                            <li>Rental End: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('F j, Y, g:i a') }}</span>
                                             </li>
                                             <li>Rate/Hour:
                                                 <span class="font-semibold text-green-600">
@@ -493,11 +494,11 @@ new class extends Component {
                                             <li>Days: <span
                                                     class="font-semibold text-green-600">{{ $days ?: 0 }}</span>
                                             </li>
-                                            <li>Pickup: <span
-                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
+                                            <li>Rental Start: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('F j, Y, g:i a') }}</span>
                                             </li>
-                                            <li>Drop-off: <span
-                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
+                                            <li>Rental End: <span
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('F j, Y, g:i a') }}</span>
                                             </li>
                                             <li>Rate/Day:
                                                 <span class="font-semibold text-green-600">
@@ -516,10 +517,10 @@ new class extends Component {
                                         {{-- For Pickup & DropOff --}}
                                         @if ($trip_type === 'pickup_dropOff')
                                             <li>Pickup: <span
-                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('M d, Y h:i A') }}</span>
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_start)->format('F j, Y, g:i a') }}</span>
                                             </li>
                                             <li>Drop-off: <span
-                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('M d, Y h:i A') }}</span>
+                                                    class="font-semibold  text-green-600">{{ \Carbon\Carbon::parse($rental_end)->format('F j, Y, g:i a') }}</span>
                                             </li>
                                             <li>Flat Rate:
                                                 <span class="font-semibold text-green-600">
