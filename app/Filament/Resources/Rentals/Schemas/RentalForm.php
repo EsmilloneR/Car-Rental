@@ -29,62 +29,30 @@ class RentalForm
                         }),
 
                     Select::make('user_id')
-                    ->relationship('user', 'name', modifyQueryUsing: fn ($query) => $query->where('role', 'renter'))
-                    ->required()
-                    ->preload()
-                    ->disabled()
-                    ->dehydrated()
-                    ->live(),
-
-                    // Select::make('vehicle_id')
-                    //     ->label('Vehicle')
-                    //     ->relationship(
-                    //         name: 'vehicle',
-                    //         titleAttribute: 'model',
-                    //         modifyQueryUsing: function ($query, callable $get) {
-                    //             $start = $get('rental_start');
-                    //             $end   = $get('rental_end');
-
-                    //             if ($start && $end) {
-                    //                 $query->whereDoesntHave('rentals', function ($q) use ($start, $end) {
-                    //                     $q->whereIn('status', ['reserved', 'ongoing']) // block active rentals
-                    //                     ->where(function ($q2) use ($start, $end) {
-                    //                         $q2->whereBetween('rental_start', [$start, $end])
-                    //                             ->orWhereBetween('rental_end', [$start, $end])
-                    //                             ->orWhere(function ($q3) use ($start, $end) {
-                    //                                 $q3->where('rental_start', '<=', $start)
-                    //                                     ->where('rental_end', '>=', $end);
-                    //                             });
-                    //                     });
-                    //                 });
-                    //             }
-
-                    //             $query->whereDoesntHave('rentals', function ($q) {
-                    //                 $q->whereIn('status', ['reserved', 'ongoing']);
-                    //             });
-                    //         }
-                    //     )
-                    //     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->manufacturer->name} {$record->model} {$record->year}")
-                    //     ->required()
-                    //     ->searchable()
-                    //     ->preload(),
+                        ->relationship('user', 'name', modifyQueryUsing: fn($query) => $query->where('role', 'renter'))
+                        ->required()
+                        ->preload()
+                        ->disabled()
+                        ->dehydrated()
+                        ->live(),
 
                     DateTimePicker::make('rental_start')
                         ->label('Start Date/Time')
                         ->required(),
+
                     DateTimePicker::make('rental_end')
                         ->label('End Date/Time')
                         ->required(),
 
                     Select::make('trip_type')
                         ->options([
-                        'pickup_dropOff' => 'Pickup drop off',
-                        'hrs' => 'Hrs',
-                        'roundtrip' => 'Roundtrip',
-                        '24hrs' => '24hrs',
-                        'days' => 'Days',
-                        'weeks' => 'Weeks',
-                        'months' => 'Months',
+                            'pickup_dropOff' => 'Pickup & Drop-off',
+                            'hrs' => 'Hourly',
+                            'roundtrip' => 'Roundtrip',
+                            '24hrs' => '24 Hours',
+                            'days' => 'Days',
+                            'weeks' => 'Weeks',
+                            'months' => 'Months',
                         ])
                         ->required()
                         ->live(),
@@ -92,37 +60,83 @@ class RentalForm
                     Select::make('status')
                         ->beforeLabel(Icon::make(Heroicon::Star))
                         ->options([
-                        'pending' => 'Pending',
-                        'reserved' => 'Reserved',
-                        'ongoing' => 'Ongoing',
-                        'completed' => 'Completed',
-                        'cancelled' => 'Cancelled',
+                            'pending' => 'Pending',
+                            'reserved' => 'Reserved',
+                            'ongoing' => 'Ongoing',
+                            'completed' => 'Completed',
+                            'cancelled' => 'Cancelled',
                         ])
                         ->default('pending')
                         ->required()
                         ->live(),
 
                 ])->columns(2),
-                Section::make()->schema([
+
+                Section::make('Payment Details')->schema([
                     TextInput::make('base_amount')
+                        ->label('Base Amount (₱)')
                         ->required()
                         ->numeric()
-                        ->default(0.0),
-                    TextInput::make('deposit')
+                        ->default(0.0)
+                        ->reactive()
+                        ->prefix('₱'),
+
+                    TextInput::make('reservation_fee')
+                        ->label('Reservation Fee (₱)')
                         ->required()
                         ->numeric()
-                        ->default(0.0),
+                        ->default(0.0)
+                        ->reactive()
+                        ->prefix('₱')
+                        ->afterStateUpdated(function (callable $set, $get) {
+                            $remaining = max(0, ($get('base_amount') ?? 0) - ($get('reservation_fee') ?? 0));
+                            $set('remaining_balance', $remaining);
+                        })
+                        ->hint('Automatically computed: ₱1000 or 20% of base amount.'),
+
                     TextInput::make('extra_charges')
+                        ->label('Extra Charges (₱)')
                         ->required()
                         ->numeric()
-                        ->default(0.0),
+                        ->default(0.0)
+                        ->reactive()
+                        ->prefix('₱'),
+
                     TextInput::make('penalties')
+                        ->label('Penalties (₱)')
                         ->required()
                         ->numeric()
-                        ->default(0.0),
+                        ->default(0.0)
+                        ->reactive()
+                        ->prefix('₱'),
 
-                ]),
+                    TextInput::make('remaining_balance')
+                        ->label('Remaining Balance (₱)')
+                        ->disabled()
+                        ->dehydrated(false)
+                        ->reactive()
+                        ->prefix('₱')
+                        ->afterStateHydrated(function ($set, $get) {
+                            $remaining = max(0, ($get('base_amount') ?? 0) - ($get('reservation_fee') ?? 0));
+                            $set('remaining_balance', $remaining);
+                        }),
+                ])
+                ->columns(2)
+                ->afterStateUpdated(function (callable $set, $get) {
+                    $base = (float) $get('base_amount');
+                    $tripType = $get('trip_type') ?? 'days';
 
+                    $duration = 1;
+                    if ($get('rental_start') && $get('rental_end')) {
+                        $duration = now()->parse($get('rental_end'))->diffInDays(now()->parse($get('rental_start'))) ?: 1;
+                    }
+
+                    $fee = Rental::calculateReservationFee($base, $tripType, $duration);
+                    $set('reservation_fee', $fee);
+
+                    $remaining = max(0, $base - $fee);
+                    $set('remaining_balance', $remaining);
+                }),
             ]);
     }
 }

@@ -54,24 +54,39 @@ class OngoingJob implements ShouldQueue
         Log::info("OngoingJob started for rental {$this->rentalId}");
 
         $rental = Rental::find($this->rentalId);
-
         if (!$rental) {
             Log::warning("OngoingJob: Rental ID {$this->rentalId} not found.");
             return;
         }
-        Log::info("Rental found, status={$rental->status}, end={$rental->rental_end}");
 
+        if ($rental->status !== 'ongoing') {
+            Log::info("Rental {$rental->id} is not ongoing (status={$rental->status}), skipping.");
+            return;
+        }
 
+        $now = now();
         $end = Carbon::parse($rental->rental_end);
-        if ($rental->status === 'ongoing' && now()->gte($end)) {
+
+        if ($rental->rental_start && $now->greaterThan($rental->rental_start) && $rental->rental_start->diffInMinutes($now) <= 5) {
+            $diffMinutes = $rental->rental_start->diffInMinutes($now);
+            if ($diffMinutes > 0) {
+                Log::info("Admin late by {$diffMinutes} minute(s). Extending rental_end accordingly.");
+
+                $rental->update([
+                    'rental_end' => $end->addMinutes($diffMinutes),
+                ]);
+
+                Log::info("Rental {$rental->id} rental_end auto-extended to {$rental->rental_end}.");
+            }
+        }
+
+        if ($now->gte($rental->rental_end)) {
             $rental->update(['status' => 'completed']);
             $rental->user->notify(new RentalCompletedNotification($rental));
 
             $admin = User::where('role', 'admin')->first();
             if ($admin) {
                 $admin->notify(new RentalCompletedNotification($rental));
-
-                Log::info("Attempting to send Filament notification to admin...");
 
                 Notification::make()
                     ->title('Rental Completed')
@@ -80,15 +95,13 @@ class OngoingJob implements ShouldQueue
                     ->sendToDatabase($admin)
                     ->broadcast($admin);
 
-                Log::info("Filament notification successfully triggered for admin {$admin->id}");
-
+                Log::info("Filament notification successfully sent to admin {$admin->id}");
             }
 
             Log::info("Rental {$rental->id} marked as completed at {$rental->rental_end}");
-        }else{
-            Log::info("Rental {$rental->id} still ongoing (now=" . now() . ", end={$rental->rental_end})");
+        } else {
+            Log::info("Rental {$rental->id} still ongoing (now={$now}, end={$rental->rental_end})");
         }
-
     }
 
 

@@ -35,7 +35,7 @@ class PaymentConfirmed implements ShouldBroadcastNow
     {
         return [
             'user' => $this->payment->rentals->user->name ?? 'Unknown',
-            'manufacturer' => $this->payment->rentals->vehicle->manufacturer->name ?? '',
+            'manufacturer' => $this->payment->rentals->vehicle->manufacturer->brand ?? '',
             'vehicle' => $this->payment->rentals->vehicle->model ?? '',
             'amount' => $this->payment->amount,
             'reference' => $this->payment->transaction_reference,

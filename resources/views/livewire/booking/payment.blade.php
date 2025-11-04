@@ -29,8 +29,8 @@ new class extends Component {
     public $weeks = 0;
 
     public $base_amount = 0;
-    public $deposit_percentage = 0.3;
-    public $deposit = 0;
+    public $reservation_percentage = 0.2;
+    public $reservation_fee = 0;
     public $total = 0;
 
     public $error = null;
@@ -59,7 +59,7 @@ new class extends Component {
             'rental_start' => 'nullable',
             'rental_end' => 'nullable',
             'total' => 'required|numeric|min:1',
-            'deposit' => 'nullable|numeric|min:1',
+            'reservation_fee' => 'nullable|numeric|min:1',
             'base_amount' => 'nullable|numeric|min:1',
             'paymongo_url' => 'nullable|string',
             'accepted_terms' => 'accepted',
@@ -91,8 +91,8 @@ new class extends Component {
                         $this->rental_end = $start->copy()->addHours($hours)->format('Y-m-d\TH:i');
 
                         $this->base_amount = $hours * $ratePerHour;
-                        $this->deposit = $this->base_amount * $this->deposit_percentage;
-                        $this->total = $this->base_amount + $this->deposit;
+                        $this->reservation_fee = $this->base_amount * $this->reservation_percentage;
+                        $this->total = $this->base_amount + $this->reservation_fee;
                     } else {
                         $this->error = 'Please enter a valid pickup time and number of hours.';
                     }
@@ -110,9 +110,9 @@ new class extends Component {
                         $this->days = $days;
 
                         $this->base_amount = $days * $this->vehicle->rate_day;
-                        $this->deposit = $this->deposit_percentage * $this->base_amount;
+                        $this->reservation_fee = $this->reservation_percentage * $this->base_amount;
 
-                        $this->total = $this->deposit + $this->base_amount;
+                        $this->total = $this->reservation_fee + $this->base_amount;
                         // dd($this->total);
                     }
                     break;
@@ -120,8 +120,8 @@ new class extends Component {
                 case 'pickup_dropOff':
                     if (!empty($this->pickup_location) && !empty($this->dropOff_location) && $this->rental_start && $this->rental_end) {
                         $this->base_amount = max(250, min($this->vehicle->rate_day, 2500));
-                        $this->deposit = $this->deposit_percentage * $this->base_amount;
-                        $this->total = $this->base_amount + $this->deposit;
+                        $this->reservation_fee = $this->reservation_percentage * $this->base_amount;
+                        $this->total = $this->base_amount + $this->reservation_fee;
                     } else {
                         $this->error = 'Please enter pickup/drop-off locations and valid dates.';
                     }
@@ -154,7 +154,7 @@ new class extends Component {
                 'rental_start' => $this->rental_start,
                 'rental_end' => $this->rental_end,
                 'base_amount' => $this->base_amount,
-                'deposit' => $this->deposit,
+                'reservation' => $this->reservation_fee,
                 'status' => 'pending',
                 'agreement_no' => 'CRTG-' . strtoupper(uniqid()),
             ]);
@@ -182,8 +182,8 @@ new class extends Component {
                                 [
                                     'name' => "{$this->vehicle->manufacturer->brand} {$this->vehicle->model}",
                                     'currency' => 'PHP',
-                                    'amount' => (int) ($this->total * 100),
-                                    'description' => "{$this->vehicle->model} Rental",
+                                    'amount' => (int) ($this->reservation_fee * 100),
+                                    'description' => 'Non-refundable reservation fee (20%)',
                                     'quantity' => 1,
                                 ],
                             ],
@@ -235,6 +235,7 @@ new class extends Component {
         $isReserved = Rental::where('vehicle_id', $vehicle->id)
             ->whereIn('status', ['pending', 'reserved', 'ongoing'])
             ->exists();
+
     @endphp
 
     @if ($isReserved)
@@ -301,7 +302,7 @@ new class extends Component {
                             <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm mt-2 space-y-1">
                                 <li>The renter must present a valid driver’s license and government-issued ID upon
                                     vehicle pickup.</li>
-                                <li>A refundable security deposit is required and will be returned after vehicle
+                                <li>A refundable security reservation is required and will be returned after vehicle
                                     inspection.</li>
                                 <li>Any damage, traffic violations, or lost items during the rental period are the
                                     renter’s responsibility.</li>
@@ -487,11 +488,22 @@ new class extends Component {
                                                     {{ Number::currency($vehicle->rate_day / 10, 'PHP') }}
                                                 </span>
                                             </li>
-                                            <li>Deposit (30%):
+                                            <li>Reservation (20%):
                                                 <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($this->deposit, 'PHP') }}
+                                                    {{ Number::currency($this->reservation_fee, 'PHP') }}
                                                 </span>
                                             </li>
+                                            <div
+                                                class="bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-3 text-sm mt-3">
+                                                <strong>Booking Payment Notice:</strong>
+                                                You are paying <strong>only the reservation fee (20%)</strong> to
+                                                confirm your booking.
+                                                The remaining balance of
+                                                <strong>₱{{ number_format($base_amount - $reservation_fee, 2) }}</strong>
+                                                must be paid upon pickup of the vehicle at our office.
+                                                <br><span class="text-red-600">The reservation fee is non-refundable if
+                                                    the booking is cancelled or modified.</span>
+                                            </div>
                                         @endif
 
                                         {{-- For Days --}}
@@ -511,11 +523,23 @@ new class extends Component {
                                                 </span>
                                             </li>
 
-                                            <li>Deposit (30%):
+                                            <li>Reservation (20%):
                                                 <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($this->deposit, 'PHP') }}
+                                                    {{ Number::currency($this->reservation_fee, 'PHP') }}
                                                 </span>
                                             </li>
+
+                                            <div
+                                                class="bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-3 text-sm mt-3">
+                                                <strong>Booking Payment Notice:</strong>
+                                                You are paying <strong>only the reservation fee (20%)</strong> to
+                                                confirm your booking.
+                                                The remaining balance of
+                                                <strong>₱{{ number_format($base_amount - $reservation_fee, 2) }}</strong>
+                                                must be paid upon pickup of the vehicle at our office.
+                                                <br><span class="text-red-600">The reservation fee is non-refundable if
+                                                    the booking is cancelled or modified.</span>
+                                            </div>
                                         @endif
 
 
@@ -532,11 +556,24 @@ new class extends Component {
                                                     {{ Number::currency(max(250, min($vehicle->rate_day, 2500)), 'PHP') }}
                                                 </span>
                                             </li>
-                                            <li>Deposit:
+                                            <li>Reservation:
                                                 <span class="font-semibold text-green-600">
-                                                    {{ Number::currency($this->deposit, 'PHP') }}
+                                                    {{ Number::currency($this->reservation_fee, 'PHP') }}
                                                 </span>
                                             </li>
+
+
+                                            <div
+                                                class="bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-3 text-sm mt-3">
+                                                <strong>Booking Payment Notice:</strong>
+                                                You are paying <strong>only the reservation fee (20%)</strong> to
+                                                confirm your booking.
+                                                The remaining balance of
+                                                <strong>₱{{ number_format($base_amount - $reservation_fee, 2) }}</strong>
+                                                must be paid upon pickup of the vehicle at our office.
+                                                <br><span class="text-red-600">The reservation fee is non-refundable if
+                                                    the booking is cancelled or modified.</span>
+                                            </div>
                                         @endif
 
                                         <hr class="my-2 border-gray-300 dark:border-gray-600">

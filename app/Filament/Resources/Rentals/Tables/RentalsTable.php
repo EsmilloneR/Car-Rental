@@ -68,6 +68,14 @@ class RentalsTable
                         TextColumn::make('total')
                             ->money('php')
                             ->weight('bold'),
+
+                        // ✅ Added computed Remaining Balance
+                        TextColumn::make('remaining_balance')
+                            ->label('Remaining Balance')
+                            ->money('php')
+                            ->sortable()
+                            ->color('warning')
+                            ->tooltip('Automatically computed: Base Amount minus Reservation Fee'),
                     ]),
 
                     Stack::make([

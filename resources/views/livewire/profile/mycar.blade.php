@@ -146,18 +146,18 @@ new class extends Component {
                                     this.remaining = '—';
                                     return;
                                 }
-
+                        
                                 const diff = this.endTime - Date.now();
                                 if (diff <= 0) {
                                     this.remaining = 'Expired';
                                     return;
                                 }
-
+                        
                                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                                 const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
                                 const minutes = Math.floor((diff / (1000 * 60)) % 60);
                                 const seconds = Math.floor((diff / 1000) % 60);
-
+                        
                                 this.remaining =
                                     (days > 0 ? days + 'd ' : '') +
                                     (hours > 0 ? hours + 'h ' : '') +
@@ -203,34 +203,76 @@ new class extends Component {
         </div>
 
         @if ($showModal && $selectedRental)
-
-            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm transition-opacity duration-300"
-                x-transition.opacity>
-
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
-                    <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 p-4">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                            {{ $selectedRental->vehicle->manufacturer->brand }} {{ $selectedRental->vehicle->model }}
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden transform transition-all scale-100">
+                    {{-- Header --}}
+                    <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 p-5">
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                            🚗 {{ $selectedRental->vehicle->manufacturer->brand }}
+                            <span class="font-light">{{ $selectedRental->vehicle->model }}</span>
                         </h3>
                         <button wire:click="closeModal"
-                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">&times;</button>
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition text-2xl leading-none">&times;</button>
                     </div>
 
-                    <div class="p-5 space-y-3 text-gray-700 dark:text-gray-300">
+                    {{-- Body --}}
+                    <div class="p-6 space-y-4 text-gray-700 dark:text-gray-300">
                         <img src="{{ asset('storage/' . $selectedRental->vehicle->photos[1]) }}"
-                            alt="{{ $selectedRental->vehicle->model }}" class="w-full h-48 object-cover rounded-lg">
-                        <p><span class="font-medium">Agreement No:</span> {{ $selectedRental->agreement_no }}</p>
-                        <p><span class="font-medium">Vehicle Year:</span> {{ $selectedRental->vehicle->year }}</p>
-                        <p><span class="font-medium">Plate Number:</span>
-                            {{ strtoupper($selectedRental->vehicle->plate_number) }}</p>
-                        <p><span class="font-medium">Color:</span> {{ ucfirst($selectedRental->vehicle->color) }}</p>
-                        <p><span class="font-medium">Start Date:</span>
-                            {{ \Carbon\Carbon::parse($selectedRental->rental_start)->format('M d, Y h:i A') }}</p>
-                        <p><span class="font-medium">End Date:</span>
-                            {{ \Carbon\Carbon::parse($selectedRental->rental_end)->format('M d, Y h:i A') }}</p>
-                        <p><span class="font-medium">Total Amount:</span>
-                            ₱{{ number_format($selectedRental->total, 2) }}</p>
-                        <p><span class="font-medium">Status:</span>
+                            alt="{{ $selectedRental->vehicle->model }}"
+                            class="w-full h-48 object-cover rounded-lg shadow-md">
+
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <p><span class="font-semibold">Agreement No:</span> {{ $selectedRental->agreement_no }}</p>
+                            <p><span class="font-semibold">Plate Number:</span>
+                                {{ strtoupper($selectedRental->vehicle->plate_number) }}</p>
+                            <p><span class="font-semibold">Year:</span> {{ $selectedRental->vehicle->year }}</p>
+                            <p><span class="font-semibold">Color:</span> {{ ucfirst($selectedRental->vehicle->color) }}
+                            </p>
+                            <p><span class="font-semibold">Start Date:</span>
+                                {{ \Carbon\Carbon::parse($selectedRental->rental_start)->format('M d, Y h:i A') }}</p>
+                            <p><span class="font-semibold">End Date:</span>
+                                {{ \Carbon\Carbon::parse($selectedRental->rental_end)->format('M d, Y h:i A') }}</p>
+                        </div>
+
+                        {{-- 💰 Payment Summary --}}
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border dark:border-gray-600 mt-2">
+                            <h4
+                                class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 uppercase tracking-wide">
+                                Payment Summary
+                            </h4>
+                            <div class="space-y-1 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Base Amount:</span>
+                                    <span class="font-medium text-gray-900 dark:text-gray-100">
+                                        ₱{{ number_format($selectedRental->base_amount, 2) }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Reservation Fee:</span>
+                                    <span class="font-medium text-blue-600 dark:text-blue-400">
+                                        ₱{{ number_format($selectedRental->reservation_fee, 2) }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Remaining Balance:</span>
+                                    <span class="font-medium text-orange-600 dark:text-orange-400">
+                                        ₱{{ number_format($selectedRental->remaining_balance, 2) }}
+                                    </span>
+                                </div>
+                                <hr class="my-2 border-gray-300 dark:border-gray-600">
+                                <div class="flex justify-between text-base font-bold">
+                                    <span>Total:</span>
+                                    <span class="text-green-600 dark:text-green-400">
+                                        ₱{{ number_format($selectedRental->total, 2) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Status --}}
+                        <p class="mt-3">
+                            <span class="font-semibold">Status:</span>
                             <span class="@class([
                                 'px-2 py-1 rounded-full text-xs font-semibold',
                                 'bg-yellow-100 text-yellow-700' => $selectedRental->status === 'pending',
@@ -243,30 +285,32 @@ new class extends Component {
                         </p>
                     </div>
 
-                    <div class="flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 p-4">
+                    {{-- Footer --}}
+                    <div
+                        class="flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800">
                         @if ($selectedRental->status === 'pending' && $selectedRental->paymongo_url)
                             <button wire:click="attemptPayment({{ $selectedRental->id }})"
-                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
-                                Continue Payment
+                                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm transition">
+                                💳 Continue Payment
                             </button>
                         @endif
 
                         @if ($selectedRental->status === 'pending')
                             <button wire:click="attemptCancel({{ $selectedRental->id }})"
-                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
-                                Cancel Booking
+                                class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm transition">
+                                ❌ Cancel Booking
                             </button>
                         @endif
 
                         <button wire:click="closeModal"
-                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200">
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2 rounded-lg text-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 transition">
                             Close
                         </button>
                     </div>
-
                 </div>
             </div>
         @endif
+
 
     @endif
 </div>
