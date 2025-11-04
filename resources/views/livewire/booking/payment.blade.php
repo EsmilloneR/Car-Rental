@@ -300,6 +300,7 @@ new class extends Component {
                                 By proceeding with this booking, you agree to the following terms and conditions:
                             </p>
                             <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm mt-2 space-y-1">
+                                <li>The renter must be 21 years old or above.</li>
                                 <li>The renter must present a valid driver’s license and government-issued ID upon
                                     vehicle pickup.</li>
                                 <li>A refundable security reservation is required and will be returned after vehicle
@@ -324,6 +325,7 @@ new class extends Component {
                                 <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                             @enderror
                         </div>
+
 
                     </div>
 
