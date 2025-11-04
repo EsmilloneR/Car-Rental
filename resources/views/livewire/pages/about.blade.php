@@ -28,7 +28,7 @@ new class extends Component {
 };
 ?>
 
-<div class="max-w-7xl mx-auto px-6 py-12 space-y-16">
+<div class="max-w-7xl mx-auto px-6 py-12 space-y-16" wire:poll.keep-alive>
     <!-- About Header -->
     <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-10 text-center">
         <h1 class="text-3xl md:text-4xl font-bold mb-4">

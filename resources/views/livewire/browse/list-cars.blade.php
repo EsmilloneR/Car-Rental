@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto px-6 py-8">
+<div wire:poll.keep-alive class="max-w-7xl mx-auto px-6 py-8">
 
     <div class="overflow-x-auto scrollbar-hide mb-8">
         <ul class="flex space-x-3">

@@ -2,7 +2,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @filamentStyles
     @filamentScripts
-    <div class="space-y-10 ">
+    <div class="space-y-10">
 
         <div class="bg-white dark:bg-gray-900 shadow rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
             <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">

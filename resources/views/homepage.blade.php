@@ -7,7 +7,7 @@
 
 </head>
 
-<body class="bg-gray-900 text-white font-poppins antialiased">
+<body class="bg-gray-900 text-white font-poppins antialiased" wire:poll.keep-alive>
     {{-- HEADER --}}
     <header class="fixed top-0 left-0 w-full z-50">
         <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-2">
@@ -67,6 +67,11 @@
                 <a href="{{ url('settings/profile') }}" class="font-semibold hover:text-red-500">
                     {{ Auth::user()->name }}
                 </a>
+                @if (Auth::user()->role === 'admin')
+                    <a href="/admin" class="font-semibold hover:text-red-500">Admin Analytics</a>
+                @else
+                    <a href="profile.mycar" class="font-semibold hover:text-red-500">My Rent</a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="hover:text-red-500 font-semibold">Log Out</button>

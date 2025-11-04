@@ -66,7 +66,7 @@
                             <flux:menu.item href="/admin" icon="chart-bar">{{ __('Admin Analytics') }}
                             </flux:menu.item>
                         @else
-                            <flux:menu.item :href="route('profile.mycar')" icon="truck" wire:navigate.hover>
+                            <flux:menu.item :href="route('profile.mycar')" icon="truck">
                                 {{ __('My Rent') }}
                             </flux:menu.item>
                         @endif
@@ -119,7 +119,7 @@
                         {{ __('Admin Analytics') }}
                     </flux:navlist.item>
                 @else
-                    <flux:navlist.item icon="truck" :href="route('profile.mycar')" wire:navigate.hover>
+                    <flux:navlist.item icon="truck" :href="route('profile.mycar')">
                         {{ __('My Rent') }}
                     </flux:navlist.item>
                 @endif

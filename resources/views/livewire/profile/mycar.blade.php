@@ -99,7 +99,7 @@ new class extends Component {
 ?>
 
 
-<div class="max-w-6xl mx-auto p-6 font-poppins">
+<div wire:poll.keep-alive class="max-w-6xl mx-auto p-6 font-poppins">
     <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">My Rentals</h2>
 
     @if ($rentals->isEmpty())
@@ -258,14 +258,6 @@ new class extends Component {
                             </button>
                         @endif
 
-                        {{-- ✅ View Receipt button for completed rentals --}}
-                        {{-- @if ($selectedRental->status === 'completed')
-                            <a href="{{ route('payments.receipt', $selectedRental->id) }}" target="_blank"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
-                                View Receipt
-                            </a>
-                        @endif --}}
-
                         <button wire:click="closeModal"
                             class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200">
                             Close
@@ -343,7 +335,7 @@ new class extends Component {
 
 
         Livewire.on('schedule-refresh', () => {
-            setTimeout(() => Livewire.dispatch('refreshRentals'), 2000);
+            setTimeout(() => Livewire.dispatch('refreshRentals'), 30000);
         });
     });
 </script>
